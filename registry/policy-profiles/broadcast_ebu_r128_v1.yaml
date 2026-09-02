@@ -1,0 +1,29 @@
+name: broadcast_ebu_r128_v1
+owner: audio-suite/community
+reference: "EBU Tech 3341 / R 128 (https://tech.ebu.ch/publications/r128)"
+description: "Profile para produção broadcast linear conforme EBU R 128"
+
+checks:
+  - id: AC-01
+    analyzer: loudness
+    params:
+      target_integrated_lufs: -23.0
+      tolerance_lufs: 0.5
+    severity: error
+
+  - id: AC-02
+    analyzer: signal
+    params:
+      max_true_peak_dbtp: -1.0
+      allow_clipping: false
+    severity: error
+
+  - id: MD-01
+    analyzer: metadata
+    params: {}
+    severity: info
+
+decision_policy:
+  fail_on: error
+  warning_on: warning
+  unknown_on: indeterminate

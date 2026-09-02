@@ -1,0 +1,21 @@
+project:
+  name: "Remix de teste — campanha publicitária Coca-Cola"
+  purpose: commercial_campaign
+  territory: BR
+  language: pt-BR
+
+assets_used:
+  - asset_id: "freesound:123456"
+    title: "Vinyl Crackles Loop"
+    licensor: "user@freesound.org"
+    license: "CC-BY-3.0"
+    attribution_required: true
+    attribution_text: "Vinyl Crackles Loop by user@freesound.org (CC-BY 3.0)"
+
+  - asset_id: "samplepack:k12-drums"
+    title: "Drum Loop K12"
+    licensor: "samplecorp.com"
+    license: "CC-BY-NC-4.0"
+    commercial_use_allowed: false
+    attribution_required: true
+    attribution_text: "Drum Loop K12 by SampleCorp (CC-BY-NC 4.0)"

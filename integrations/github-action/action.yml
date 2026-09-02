@@ -1,0 +1,23 @@
+name: "audio-suite — Validate audio artifacts"
+description: "Runs audio-suite against an audio file and publishes evidence bundle"
+inputs:
+  input_audio:
+    description: "Path to audio file (WAV/FLAC)"
+    required: true
+  profile:
+    description: "Path to policy profile YAML"
+    required: true
+  output_bundle:
+    description: "Path to output bundle JSON"
+    default: "audio-evidence-bundle.json"
+
+runs:
+  using: "docker"
+  image: "audio-suite-action:latest"
+  args:
+    - validate
+    - "${{ inputs.input_audio }}"
+    - "--profile"
+    - "${{ inputs.profile }}"
+    - "--output"
+    - "${{ inputs.output_bundle }}"

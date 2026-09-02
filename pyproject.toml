@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "audio-suite"
+version = "0.1.0-alpha"
+description = "Assurance engine for audio artifacts: measures, policies, evidence."
+authors = [{ name="Dan Zeroum", email="danzeroum@proton.me" }]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Sound/Audio"
+]
+dependencies = [
+    "pyloudnorm>=0.2.0",
+    "mutagen>=1.47.0",
+    "ffmpeg-python>=0.2.0",
+    "ruamel.yaml>=0.17.0",
+    "PyCryptodome>=3.18.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov", "mypy", "ruff"]
