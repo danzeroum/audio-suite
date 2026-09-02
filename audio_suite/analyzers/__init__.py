@@ -40,14 +40,14 @@ from . import (
     chan_balance,  # noqa: E402,F401
     clipping,  # noqa: E402,F401
     codec_conf,  # noqa: E402,F401
-    deepfake,  # noqa: E402,F401
-    enf_phase,  # noqa: E402,F401
+    descriptors,  # noqa: E402,F401
     glitch,  # noqa: E402,F401
     goniometer,  # noqa: E402,F401
     inspect_meta,  # noqa: E402,F401
     loop,  # noqa: E402,F401
     loudness,  # noqa: E402,F401
     lra,  # noqa: E402,F401
+    mam_dam,  # noqa: E402,F401
     mono_compat,  # noqa: E402,F401
     multichannel_layout,  # noqa: E402,F401
     ref_quality,  # noqa: E402,F401

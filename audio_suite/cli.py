@@ -138,6 +138,12 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         bundle_to_html(bundle, output_path=out_path or "audio_suite_report.html")
         if out_path:
             sys.stdout.write(f"report written to {out_path}\n")
+    elif fmt == "csv":
+        from .output.csv_out import bundle_to_csv
+
+        csv_str = bundle_to_csv(bundle, output_path=out_path)
+        if not out_path:
+            sys.stdout.write(csv_str)
     else:
         return _emit_error(f"unknown format: {fmt}", ExitCode.USAGE)
 
@@ -201,7 +207,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_analyze = sub.add_parser("analyze", help="run analysis")
     p_analyze.add_argument("file", help="audio file path")
     p_analyze.add_argument("--profile", help="profile YAML path (default: built-in)")
-    p_analyze.add_argument("--format", choices=["json", "sarif", "html"], default="json")
+    p_analyze.add_argument("--format", choices=["json", "sarif", "html", "csv"], default="json")
     p_analyze.add_argument("--output", "-o", help="output file path")
     p_analyze.add_argument("--strict", action="store_true", help="apply strict overlay")
     p_analyze.add_argument("--jobs", "-j", type=int, default=1, help="parallel jobs (placeholder)")
