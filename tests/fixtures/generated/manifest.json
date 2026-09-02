@@ -178,7 +178,7 @@
     "channels": 1,
     "purpose": "32-bit float reference",
     "sample_rate": 44100,
-    "sha256": "870274d43036429f5f16c151ccdc2d2d4176fe1691d1ee935241a438bf6941fa",
+    "sha256": "b66789a4977e263b7796d785104c870e3dd3e457bfe9525908f1dd19bb1779b2",
     "subtype": "FLOAT"
   },
   "sine_1k_mono.wav": {

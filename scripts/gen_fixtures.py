@@ -196,14 +196,17 @@ def gen_speech_like(sr: int = SR, dur_s: float = DURATION_S, seed: int = 99) -> 
 
 def gen_truncated_wav(path: Path, valid_bytes: int) -> str:
     """Write a valid WAV then truncate to `valid_bytes`."""
+    import tempfile
     x = gen_sine(440)
-    full = path.parent / (path.stem + "_full.wav")
+    # Use a temp file with explicit .wav extension to avoid soundfile format issues
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False, dir=path.parent) as tmp:
+        full = Path(tmp.name)
     _save(full, x)
     with open(full, "rb") as f:
         data = f.read()
     truncated = data[:valid_bytes]
     path.write_bytes(truncated)
-    # Clean up the full file to avoid confusing soundfile
+    # Clean up temp file
     full.unlink(missing_ok=True)
     with open(path, "rb") as f:
         return hashlib.sha256(f.read()).hexdigest()
