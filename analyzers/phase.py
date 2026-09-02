@@ -84,13 +84,13 @@ def run_analyzer(
 
     # Correlação de Pearson entre canais
     # Normaliza para ter média 0
-    l = left - np.mean(left)
-    r = right - np.mean(right)
-    denom = np.sqrt(np.sum(l ** 2) * np.sum(r ** 2))
+    left_centered = left - np.mean(left)
+    right_centered = right - np.mean(right)
+    denom = np.sqrt(np.sum(left_centered ** 2) * np.sum(right_centered ** 2))
     if denom == 0:
         correlation = 0.0
     else:
-        correlation = float(np.sum(l * r) / denom)
+        correlation = float(np.sum(left_centered * right_centered) / denom)
 
     # Confiabilidade contextual (A4)
     # Maior duração + energia + correlação extrema → maior confiabilidade

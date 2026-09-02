@@ -25,7 +25,7 @@ class TestDecodePCMRCanonical:
     def test_decode_mono_wav(self, tmp_wav_factory, mono_pcm):
         pcm, sr = mono_pcm
         path = tmp_wav_factory("mono.wav", pcm, sr)
-        decoded, dec_sr, dec_ch, meta = decode_pcm_canonical(path)
+        decoded, _dec_sr, dec_ch, _meta = decode_pcm_canonical(path)
         assert dec_ch == 1
         assert decoded.shape[1] == 1
 

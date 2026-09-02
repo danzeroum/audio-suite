@@ -91,9 +91,11 @@ decision_policy:
         assert policy["checks"] == []
 
     def test_invalid_yaml_raises(self, tmp_path: Path):
+        import yaml as _yaml
         path = tmp_path / "bad.yaml"
         path.write_text("not: valid: yaml: {{{")
-        with pytest.raises(Exception):
+        # yaml.scanner.ScannerError é o erro esperado para YAML malformado
+        with pytest.raises(_yaml.YAMLError):
             load_policy_profile(path)
 
     def test_profile_not_dict_raises(self, tmp_path: Path):

@@ -66,7 +66,7 @@ class TestCompatibility:
             assert status == "warn_older"
 
     def test_unknown_urn(self):
-        status, msg = check_version_compatibility("urn:other:v1.0.0")
+        status, _msg = check_version_compatibility("urn:other:v1.0.0")
         assert status == "unknown"
 
 

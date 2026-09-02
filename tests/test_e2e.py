@@ -38,7 +38,7 @@ def test_e2e_validate_fixture(fixture_name: str, audio_file: str, expected_decis
     if not expected_path.exists():
         pytest.skip(f"expected.json ausente para {fixture_name}")
 
-    expected = json.loads(expected_path.read_text())
+    # expected.json é validado em tests/test_fixtures_integrity.py
 
     # Executa CLI via subprocess (mais realista que CliRunner)
     bundle_path = fixture_dir / "bundle.json"

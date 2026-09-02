@@ -27,7 +27,21 @@ from .bundle.signer import sign_bundle
 from .bundle.truncate import truncate_findings
 from .normalization import compute_file_hash
 
-SCHEMA_PATH = Path("contracts/audio-run-1.0.json")
+
+def _find_repo_root() -> Path:
+    """Encontra raiz do repo procurando por 'contracts/audio-run-1.0.json'."""
+    candidates = [
+        Path(__file__).resolve().parents[1],  # source: engine/evidence.py → [1] = repo
+        Path.cwd(),
+    ]
+    for cand in candidates:
+        if (cand / "contracts" / "audio-run-1.0.json").exists():
+            return cand
+    return Path.cwd()
+
+
+_REPO_ROOT = _find_repo_root()
+SCHEMA_PATH = _REPO_ROOT / "contracts" / "audio-run-1.0.json"
 
 
 def build_bundle(

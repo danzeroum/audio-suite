@@ -87,7 +87,7 @@ def inspect(
 
     if analysis in ("basic", "full"):
         try:
-            pcm, sr, ch, meta = decode_pcm_canonical(input_audio, sample_rate=48000)
+            pcm, _sr, _ch, meta = decode_pcm_canonical(input_audio, sample_rate=48000)
             result["pcm_canonical_sha256"] = compute_pcm_hash(pcm) if pcm.size > 0 else None
             result["pcm_meta"] = {
                 "decoder_used": meta.get("decoder_used"),

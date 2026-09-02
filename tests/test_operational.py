@@ -58,7 +58,7 @@ class TestTOCTOU:
         t_modify = threading.Thread(target=modify)
         t_modify.start()
 
-        findings, _, _, _, result = run_validation(
+        findings, _, _, _, _result = run_validation(
             input_audio=wav_path,
             policy=simple_profile,
             verbose=True,
@@ -101,7 +101,7 @@ class TestAnalyzerTimeout:
             ],
         }
 
-        findings, _, _, _, result = run_validation(
+        findings, _, _, _, _result = run_validation(
             input_audio=wav_path,
             policy=profile,
             analyzer_timeout_s=0.0001,
@@ -122,7 +122,7 @@ class TestDegenerateInputs:
         write_wav(wav_path, np.zeros((0, 2), dtype=np.float32))
         # Não deve crashar
         try:
-            pcm, sr, ch, meta = decode_pcm_canonical(wav_path)
+            pcm, _sr, _ch, meta = decode_pcm_canonical(wav_path)
             assert meta["empty"] is True or pcm.size == 0
         except Exception:
             # Aceitável: erro explícito é melhor que silêncio
@@ -242,4 +242,4 @@ class TestTruncationInBundle:
         # 100 + 1 aggregate = 101
         assert len(bundle["findings"]) == 101
         assert any("AGGREGATE" in f["id"] for f in bundle["findings"])
-        assert any("findings_truncated" in l for l in bundle["limitations"])
+        assert any("findings_truncated" in lim for lim in bundle["limitations"])
