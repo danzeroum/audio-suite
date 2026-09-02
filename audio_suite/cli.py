@@ -148,6 +148,36 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     return ExitCode.OK
 
 
+def cmd_self_check(args: argparse.Namespace) -> int:
+    """Fase 3.5: verify installation integrity."""
+    from .audit import self_check
+
+    results = self_check()
+    _print_json(results)
+    return ExitCode.OK if results.get("overall") else ExitCode.FINDING
+
+
+def cmd_audit(args: argparse.Namespace) -> int:
+    """Fase 3.5: manage audit log."""
+    from .audit import AuditLog
+
+    log = AuditLog(args.log, actor=args.actor)
+    if args.verify:
+        valid, errors = log.verify_chain()
+        _print_json({"valid": valid, "errors": errors, "log_path": args.log})
+        return ExitCode.OK if valid else ExitCode.FINDING
+    else:
+        entry = log.append(args.action, args.subject)
+        _print_json(
+            {
+                "entry_hash": entry.entry_hash,
+                "prev_hash": entry.prev_hash,
+                "timestamp": entry.timestamp,
+            }
+        )
+        return ExitCode.OK
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="audio-suite",
@@ -181,6 +211,19 @@ def build_parser() -> argparse.ArgumentParser:
     p_analyze.add_argument("--sign", action="store_true", help="sign the evidence bundle")
     p_analyze.add_argument("--signing-key", help="path to Ed25519 private key")
     p_analyze.set_defaults(func=cmd_analyze)
+
+    # self-check (Fase 3.5)
+    p_selfcheck = sub.add_parser("self-check", help="verify installation integrity")
+    p_selfcheck.set_defaults(func=cmd_self_check)
+
+    # audit (Fase 3.5)
+    p_audit = sub.add_parser("audit", help="manage audit log")
+    p_audit.add_argument("--log", default="audit.log", help="audit log path")
+    p_audit.add_argument("--action", required=True, help="action to record")
+    p_audit.add_argument("--subject", required=True, help="subject of the action")
+    p_audit.add_argument("--actor", default="anonymous", help="who performed the action")
+    p_audit.add_argument("--verify", action="store_true", help="verify chain integrity")
+    p_audit.set_defaults(func=cmd_audit)
 
     return p
 
