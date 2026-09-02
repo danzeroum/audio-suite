@@ -16,23 +16,21 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from audio_suite.analyzers import all_analyzers
+from audio_suite.analyzers import all_analyzers, analyzer_ids
 from audio_suite.models import PCM, Profile, Status
 
 SR = 44100
 
-def test_phase3_analyzers_not_auto_registered():
-    """Phase 3 ML/forensic analyzers (deepfake, ENF, pitch_stab, stem_sep,
-    acoustic_context) are NOT in the default registry. Adding them requires
-    corpus + model declaration per A2.
 
-    Note: acoustic_fingerprint is implemented in Phase 5.5 (MAM/DAM) as a
-    spectral hash stub — it's NOT an ML analyzer and doesn't require corpus.
-    """
+def test_phase3_analyzers_registered():
+    """Phase 3 analyzers ARE registered (they were implemented in Phase 2.5+3 PR).
+    Opt-in ML analyzers (deepfake, enf_phase) are registered but only run
+    when enabled:true in profile (rule 4)."""
     ids = set(analyzer_ids())
-    deferred = {"deepfake", "enf_phase", "pitch_stab", "acoustic_context", "stem_sep"}
-    for d in deferred:
-        assert d not in ids, f"{d} should not be auto-registered without corpus/model"
+    expected = {"deepfake", "enf_phase", "pitch_stab", "acoustic_context", "stem_sep"}
+    for a in expected:
+        assert a in ids, f"{a} should be registered"
+
 
 def profile_with(**analyzers) -> Profile:
     return Profile(name="t", version="1", analyzers=analyzers)

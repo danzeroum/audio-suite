@@ -36,11 +36,14 @@ def analyzer_ids() -> list[str]:
 
 # Import side-effect: register built-in analyzers
 from . import (
+    acoustic_context,  # noqa: E402,F401
     binaural_compat,  # noqa: E402,F401
     chan_balance,  # noqa: E402,F401
     clipping,  # noqa: E402,F401
     codec_conf,  # noqa: E402,F401
+    deepfake,  # noqa: E402,F401
     descriptors,  # noqa: E402,F401
+    enf_phase,  # noqa: E402,F401
     glitch,  # noqa: E402,F401
     goniometer,  # noqa: E402,F401
     inspect_meta,  # noqa: E402,F401
@@ -50,6 +53,7 @@ from . import (
     mam_dam,  # noqa: E402,F401
     mono_compat,  # noqa: E402,F401
     multichannel_layout,  # noqa: E402,F401
+    pitch_stab,  # noqa: E402,F401
     ref_quality,  # noqa: E402,F401
     resampling,  # noqa: E402,F401
     spatial_coherence,  # noqa: E402,F401
