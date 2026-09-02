@@ -5,6 +5,7 @@ The analyzer ALWAYS returns status=observation (PASS by default; the profile
 may escalate via overlay if needed, but per the principle of guidance,
 "nunca falhe um build porque o centroid está 'alto demais'").
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -18,12 +19,13 @@ from .base import AudioAnalyzer
 
 def _stft(x: np.ndarray, sr: int, n_fft: int = 2048, hop: int = 512) -> tuple[np.ndarray, np.ndarray]:
     from scipy.signal import get_window
+
     if len(x) < n_fft:
         x = np.pad(x, (0, n_fft - len(x)))
     win = get_window("hann", n_fft)
     frames = []
     for i in range(0, len(x) - n_fft + 1, hop):
-        frames.append(x[i:i + n_fft] * win)
+        frames.append(x[i : i + n_fft] * win)
     if not frames:
         return np.array([]), np.array([])
     S = np.abs(np.fft.rfft(np.stack(frames), axis=1))
@@ -90,28 +92,28 @@ class SpectralAnalyzer(AudioAnalyzer):
         flatness = _spectral_flatness(S)
         rolloff = _spectral_rolloff(S, freqs, 0.85)
 
-        return [self._finding(
-            check_id="spectral_health.descriptors",
-            metric="spectral_centroid",
-            value=round(float(centroid), 2),
-            unit="Hz",
-            status=Status.PASS,  # descriptor — never fail
-            confidence=0.9,
-            message=(
-                f"centroid={centroid:.0f}Hz flatness={flatness:.3f} rolloff={rolloff:.0f}Hz"
-            ),
-            evidence={
-                "centroid_hz": round(float(centroid), 2),
-                "flatness": round(float(flatness), 4),
-                "rolloff_85_hz": round(float(rolloff), 2),
-                "n_fft": n_fft,
-                "hop": hop,
-                "window": "hann",
-            },
-            extra_limitations=[
-                "status=pass by design; descriptors do not fail builds",
-            ],
-        )]
+        return [
+            self._finding(
+                check_id="spectral_health.descriptors",
+                metric="spectral_centroid",
+                value=round(float(centroid), 2),
+                unit="Hz",
+                status=Status.PASS,  # descriptor — never fail
+                confidence=0.9,
+                message=(f"centroid={centroid:.0f}Hz flatness={flatness:.3f} rolloff={rolloff:.0f}Hz"),
+                evidence={
+                    "centroid_hz": round(float(centroid), 2),
+                    "flatness": round(float(flatness), 4),
+                    "rolloff_85_hz": round(float(rolloff), 2),
+                    "n_fft": n_fft,
+                    "hop": hop,
+                    "window": "hann",
+                },
+                extra_limitations=[
+                    "status=pass by design; descriptors do not fail builds",
+                ],
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {

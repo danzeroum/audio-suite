@@ -3,6 +3,7 @@
 Per SG-01..SG-12: supports unsigned, local-key, CI-key modes; tamper
 detection; safe failure when key missing.
 """
+
 from __future__ import annotations
 
 import base64

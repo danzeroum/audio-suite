@@ -1,4 +1,5 @@
 """Security: Ed25519 signing, PII redaction, audit log."""
+
 from __future__ import annotations
 
 from .pii import redact_pii

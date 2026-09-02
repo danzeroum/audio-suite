@@ -2,6 +2,7 @@
 
 Per Fase 2 CODEC_CONF.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -56,24 +57,26 @@ class CodecConfAnalyzer(AudioAnalyzer):
             msg = "codec metadata matches decoded PCM"
             compliance = "conformant"
 
-        return [self._finding(
-            check_id="codec_conf.check",
-            metric="compliance_status",
-            value=None,
-            unit="enum",
-            status=status,
-            confidence=0.85,
-            message=msg,
-            evidence={
-                "compliance_status": compliance,
-                "declared_frames": declared_frames,
-                "effective_frames": effective_frames,
-                "frame_diff_pct": round(diff_pct, 3),
-                "decoder": prov.get("decoder"),
-                "subtype": prov.get("subtype"),
-                "bit_depth": bit_depth,
-            },
-        )]
+        return [
+            self._finding(
+                check_id="codec_conf.check",
+                metric="compliance_status",
+                value=None,
+                unit="enum",
+                status=status,
+                confidence=0.85,
+                message=msg,
+                evidence={
+                    "compliance_status": compliance,
+                    "declared_frames": declared_frames,
+                    "effective_frames": effective_frames,
+                    "frame_diff_pct": round(diff_pct, 3),
+                    "decoder": prov.get("decoder"),
+                    "subtype": prov.get("subtype"),
+                    "bit_depth": bit_depth,
+                },
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {

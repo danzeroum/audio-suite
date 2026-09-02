@@ -3,6 +3,7 @@
 Per roadmap: plosives, sibilance, mouth clicks, abrupt gain changes.
 Roboticidade / emotion are deferred to needs_review (Fase 3, ML-based).
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -16,12 +17,13 @@ from .base import AudioAnalyzer
 
 def _stft(x: np.ndarray, sr: int, n_fft: int = 1024, hop: int = 256) -> np.ndarray:
     from scipy.signal import get_window
+
     if len(x) < n_fft:
         x = np.pad(x, (0, n_fft - len(x)))
     win = get_window("hann", n_fft)
     frames = []
     for i in range(0, len(x) - n_fft + 1, hop):
-        frames.append(x[i:i + n_fft] * win)
+        frames.append(x[i : i + n_fft] * win)
     if not frames:
         return np.zeros((1, n_fft // 2 + 1))
     return np.abs(np.fft.rfft(np.stack(frames), axis=1))
@@ -73,22 +75,24 @@ class VoiceArtifAnalyzer(AudioAnalyzer):
             status = Status.WARNING
             msg = f"{total_events} voice artifact frames (sib={sib_events}, plos={plos_events})"
 
-        return [self._finding(
-            check_id="voice_artifacts.objective",
-            metric="artifact_frame_count",
-            value=float(total_events),
-            unit="frames",
-            status=status,
-            confidence=0.65,
-            message=msg,
-            evidence={
-                "sibilance_events": sib_events,
-                "plosive_events": plos_events,
-                "sibilance_threshold_db": sib_thr,
-                "plosive_threshold_db": plosive_thr,
-                "n_frames_analyzed": int(S.shape[0]),
-            },
-        )]
+        return [
+            self._finding(
+                check_id="voice_artifacts.objective",
+                metric="artifact_frame_count",
+                value=float(total_events),
+                unit="frames",
+                status=status,
+                confidence=0.65,
+                message=msg,
+                evidence={
+                    "sibilance_events": sib_events,
+                    "plosive_events": plos_events,
+                    "sibilance_threshold_db": sib_thr,
+                    "plosive_threshold_db": plosive_thr,
+                    "n_frames_analyzed": int(S.shape[0]),
+                },
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {

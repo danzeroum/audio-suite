@@ -8,6 +8,7 @@ Every analyzer MUST subclass AudioAnalyzer and implement:
 The contract is enforced at discovery time: any subclass missing one of
 these methods is rejected with a clear error (CT-01).
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -61,6 +62,7 @@ class AudioAnalyzer(ABC):
         extra_limitations: list[str] | None = None,
     ) -> Finding:
         from ..models import Status
+
         if isinstance(status, str):
             status = Status(status)
         limitations = list(self.DEFAULT_LIMITATIONS)

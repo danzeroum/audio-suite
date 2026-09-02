@@ -7,6 +7,7 @@ Decoding is deterministic: the same file always produces the same float32 PCM
 and the same file_sha256. No hidden resampling — if the source is 44100 Hz,
 we keep 44100 Hz (CT: resampling must be explicit).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -127,17 +128,22 @@ def _decode_via_ffmpeg(p: Path) -> tuple[np.ndarray, int, str, dict[str, Any]]:
     try:
         # Decode to 32-bit float WAV
         cmd = [
-            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-            "-i", str(p),
-            "-acodec", "pcm_f32le",
-            "-f", "wav",
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            str(p),
+            "-acodec",
+            "pcm_f32le",
+            "-f",
+            "wav",
             str(tmp_wav),
         ]
         result = subprocess.run(cmd, capture_output=True, timeout=60)
         if result.returncode != 0:
-            raise DecodeError(
-                f"ffmpeg failed: {result.stderr.decode('utf-8', 'replace')}"
-            )
+            raise DecodeError(f"ffmpeg failed: {result.stderr.decode('utf-8', 'replace')}")
         data, sr = sf.read(str(tmp_wav), always_2d=True, dtype="float32")
         samples = data.T
         info = sf.info(str(tmp_wav))
@@ -182,10 +188,9 @@ def _resample(samples: np.ndarray, sr_from: int, sr_to: int) -> np.ndarray:
     from math import gcd
 
     from scipy.signal import resample_poly
+
     g = gcd(int(sr_from), int(sr_to))
     up = int(sr_to) // g
     down = int(sr_from) // g
-    out = np.stack([
-        resample_poly(samples[c], up, down) for c in range(samples.shape[0])
-    ])
+    out = np.stack([resample_poly(samples[c], up, down) for c in range(samples.shape[0])])
     return out.astype(np.float32, copy=False)

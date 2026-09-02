@@ -1,4 +1,5 @@
 """Channel balance analyzer — L/R loudness and RMS difference."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -13,7 +14,7 @@ from .base import AudioAnalyzer
 def _rms_db(x: np.ndarray) -> float:
     if len(x) == 0:
         return -120.0
-    rms = float(np.sqrt(np.mean(x ** 2))) + 1e-12
+    rms = float(np.sqrt(np.mean(x**2))) + 1e-12
     return 20 * np.log10(rms)
 
 
@@ -22,13 +23,14 @@ def _lufs_short(x: np.ndarray, sr: int) -> float:
     if len(x) == 0:
         return -70.0
     from scipy.signal import lfilter
+
     # K-weighting (simplified)
     b1 = np.array([1.53512485958697, -2.69169618940638, 1.19839281085285])
     a1 = np.array([1.0, -1.69065929318241, 0.73248077421585])
     b2 = np.array([1.0, -2.0, 1.0])
     a2 = np.array([1.0, -1.99004745483398, 0.99007225036621])
     y = lfilter(b2, a2, lfilter(b1, a1, x.astype(np.float64)))
-    z = float(np.mean(y ** 2))
+    z = float(np.mean(y**2))
     if z <= 0:
         return -70.0
     return -0.691 + 10 * np.log10(z)

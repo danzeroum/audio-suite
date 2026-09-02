@@ -7,6 +7,7 @@ Tests that:
   - Exit codes are correct
   - Status taxonomy is complete
 """
+
 from __future__ import annotations
 
 import json
@@ -91,7 +92,12 @@ def test_T06_pcm_immutable(sine_1k):
 # T-07: Finding is immutable and serializes cleanly
 def test_T07_finding_immutable_and_serializable():
     f = Finding(
-        check_id="t", analyzer="t", metric="m", value=1.0, unit="x", status=Status.PASS,
+        check_id="t",
+        analyzer="t",
+        metric="m",
+        value=1.0,
+        unit="x",
+        status=Status.PASS,
     )
     with pytest.raises(Exception):
         f.value = 2.0  # type: ignore[misc]
@@ -105,8 +111,14 @@ def test_T07_finding_immutable_and_serializable():
 # T-08: NaN/Infinity suppression (CT-10)
 def test_T08_finding_suppresses_nan():
     import math
+
     f = Finding(
-        check_id="t", analyzer="t", metric="m", value=math.nan, unit="x", status=Status.PASS,
+        check_id="t",
+        analyzer="t",
+        metric="m",
+        value=math.nan,
+        unit="x",
+        status=Status.PASS,
     )
     d = f.to_dict()
     assert d["value"] is None
@@ -117,6 +129,7 @@ def test_T08_finding_suppresses_nan():
 def test_T09_bundle_fingerprint(sine_1k):
     from audio_suite.bundle import build_bundle
     from audio_suite.models import Profile
+
     profile = Profile(name="t", version="1", analyzers={})
     bundle = build_bundle(sine_1k, profile, [])
     assert bundle.measurement_fingerprint
@@ -127,6 +140,7 @@ def test_T09_bundle_fingerprint(sine_1k):
 def test_T10_bundle_deterministic(sine_1k):
     from audio_suite.bundle import build_bundle
     from audio_suite.models import Profile
+
     profile = Profile(name="t", version="1", analyzers={})
     b1 = build_bundle(sine_1k, profile, [])
     b2 = build_bundle(sine_1k, profile, [])

@@ -7,6 +7,7 @@ We detect:
   - intersample-revealing clusters (samples near ceiling that, when oversampled,
     exceed 0 dBFS — delegated to true_peak analyzer but mentioned here)
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -48,13 +49,15 @@ class ClippingAnalyzer(AudioAnalyzer):
             pct = 100.0 * n_clipped / audio.n_frames if audio.n_frames else 0.0
             # Detect runs
             runs = self._runs(clipped, min_run)
-            per_channel.append({
-                "channel": c,
-                "clipped_samples": n_clipped,
-                "clipped_pct": round(pct, 4),
-                "sustained_runs": len(runs),
-                "longest_run_samples": max((r[1] - r[0] for r in runs), default=0),
-            })
+            per_channel.append(
+                {
+                    "channel": c,
+                    "clipped_samples": n_clipped,
+                    "clipped_pct": round(pct, 4),
+                    "sustained_runs": len(runs),
+                    "longest_run_samples": max((r[1] - r[0] for r in runs), default=0),
+                }
+            )
 
         total_clipped = int(np.sum(all_clipped_mask))
         total_pct = 100.0 * total_clipped / audio.n_frames if audio.n_frames else 0.0

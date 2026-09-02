@@ -1,4 +1,5 @@
 """T-11 to T-25: CLI and Engine tests."""
+
 from __future__ import annotations
 
 import json
@@ -27,6 +28,7 @@ def run_cli(*args: str) -> tuple[int, str, str]:
     """Run the CLI in-process and capture stdout/stderr."""
     import io
     from contextlib import redirect_stderr, redirect_stdout
+
     out, err = io.StringIO(), io.StringIO()
     with redirect_stdout(out), redirect_stderr(err):
         try:

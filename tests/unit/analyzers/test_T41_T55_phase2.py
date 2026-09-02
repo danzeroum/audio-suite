@@ -1,4 +1,5 @@
 """T-41 to T-55: Phase 2 perceptual analyzers (Codec, RefQuality, Voice, LRA, Spectral, Transient)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -13,6 +14,7 @@ def profile_with(**analyzers) -> Profile:
 
 
 # === Codec conformance ===
+
 
 def test_codec_conf_clean(sine_1k):
     a = all_analyzers()["codec_conf"]
@@ -31,6 +33,7 @@ def test_codec_conf_has_metadata(sine_1k):
 
 
 # === Spectral health (descriptor — never fails) ===
+
 
 def test_spectral_returns_observation(sine_1k):
     a = all_analyzers()["spectral_health"]
@@ -65,6 +68,7 @@ def test_spectral_descriptor_never_fails():
     a = all_analyzers()["spectral_health"]
     # Even on a clipped signal, spectral_health must return PASS
     import numpy as np
+
     t = np.arange(44100) / 44100
     x = np.clip(1.5 * np.sin(2 * np.pi * 1000 * t), -1, 1).astype(np.float32)
     pcm = PCM(samples=x, sample_rate=44100)
@@ -73,6 +77,7 @@ def test_spectral_descriptor_never_fails():
 
 
 # === LRA ===
+
 
 def test_lra_constant_signal_zero(sine_1k):
     """A constant-amplitude sine should have LRA ~ 0."""
@@ -97,7 +102,7 @@ def test_lra_can_warn_with_threshold():
     sr = 44100
     t = np.arange(sr * 6) / sr
     x = 0.1 * np.sin(2 * np.pi * 440 * t).astype(np.float32)
-    x[ sr*3:sr*6 ] = 0.9 * np.sin(2 * np.pi * 440 * t[:sr*3]).astype(np.float32)
+    x[sr * 3 : sr * 6] = 0.9 * np.sin(2 * np.pi * 440 * t[: sr * 3]).astype(np.float32)
     pcm = PCM(samples=x, sample_rate=sr)
     findings = a.analyze(pcm, {"max_lu": 1.0})
     f = findings[0]
@@ -107,6 +112,7 @@ def test_lra_can_warn_with_threshold():
 
 
 # === Transient ===
+
 
 def test_transient_applicability_short():
     a = all_analyzers()["transient"]
@@ -123,6 +129,7 @@ def test_transient_detects_attack(pink_noise):
 
 
 # === Voice artifacts ===
+
 
 def test_voice_artif_applicability_short():
     a = all_analyzers()["voice_artifacts"]
@@ -142,6 +149,7 @@ def test_voice_artif_speech(speech_like):
 
 # === Reference quality (rule 2: no ref = indeterminate) ===
 
+
 def test_ref_quality_no_reference_returns_indeterminate(sine_1k):
     a = all_analyzers()["ref_quality"]
     profile = profile_with(ref_quality={"mode": "no-reference"})
@@ -157,15 +165,19 @@ def test_ref_quality_with_reference(sine_1k):
     import tempfile
 
     import soundfile as sf
+
     # Write a copy of sine_1k as the reference
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         ref_path = tmp.name
     sf.write(ref_path, sine_1k.samples[0], sine_1k.sample_rate)
-    findings = a.analyze(sine_1k, {
-        "mode": "speech-full-ref",
-        "reference_path": ref_path,
-        "min_score": 0.5,
-    })
+    findings = a.analyze(
+        sine_1k,
+        {
+            "mode": "speech-full-ref",
+            "reference_path": ref_path,
+            "min_score": 0.5,
+        },
+    )
     f = findings[0]
     assert f.status == Status.PASS
     assert f.value > 0.5
@@ -175,13 +187,17 @@ def test_ref_quality_hash_mismatch(sine_1k, tmp_path):
     """Reference with wrong declared hash should ERROR."""
     a = all_analyzers()["ref_quality"]
     import soundfile as sf
+
     ref_path = tmp_path / "ref.wav"
     sf.write(str(ref_path), sine_1k.samples[0], sine_1k.sample_rate)
-    findings = a.analyze(sine_1k, {
-        "mode": "speech-full-ref",
-        "reference_path": str(ref_path),
-        "reference_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-    })
+    findings = a.analyze(
+        sine_1k,
+        {
+            "mode": "speech-full-ref",
+            "reference_path": str(ref_path),
+            "reference_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        },
+    )
     f = findings[0]
     assert f.status == Status.ERROR
 
@@ -198,18 +214,28 @@ def test_ref_quality_does_not_call_no_ref_a_visqol(sine_1k):
 
 # === Applicability edge cases ===
 
+
 def test_applicability_silence(silence):
     """Silence should not crash any analyzer."""
     profile = Profile(
-        name="t", version="1",
+        name="t",
+        version="1",
         analyzers={
-            "loudness": {}, "true_peak": {}, "clipping": {},
-            "glitch": {}, "spectral_health": {}, "lra": {},
-            "codec_conf": {}, "resampling": {}, "transient": {},
-            "voice_artifacts": {}, "inspect": {},
+            "loudness": {},
+            "true_peak": {},
+            "clipping": {},
+            "glitch": {},
+            "spectral_health": {},
+            "lra": {},
+            "codec_conf": {},
+            "resampling": {},
+            "transient": {},
+            "voice_artifacts": {},
+            "inspect": {},
         },
     )
     from audio_suite.engine import run_analyzers
+
     findings = run_analyzers(silence, profile)
     # No exceptions, all findings are well-formed
     assert len(findings) > 0
@@ -220,8 +246,10 @@ def test_applicability_silence(silence):
 def test_applicability_stereo_vs_mono(sine_1k, sine_1k_stereo):
     """mono_compat and channel_balance should skip on mono; run on stereo."""
     from audio_suite.engine import run_analyzers
+
     profile = Profile(
-        name="t", version="1",
+        name="t",
+        version="1",
         analyzers={"mono_compat": {}, "channel_balance": {}},
     )
     # Mono: both should be NOT_APPLICABLE

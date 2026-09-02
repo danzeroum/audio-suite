@@ -3,6 +3,7 @@
 Per roadmap Fase 4 MULTICHANNEL_LAYOUT v1 supports PCM WAV/FLAC 5.1/7.1.
 ADM/BWF and Atmos are subprojects. We test the basic 5.1 layout helper.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -38,6 +39,7 @@ def test_atmos_separate_subproject():
 def test_mono_compat_downmix_matrix():
     """Custom downmix matrices should be honored by mono_compat."""
     from audio_suite.analyzers.mono_compat import MonoCompatAnalyzer
+
     # Build a stereo signal with L=1.0, R=0.5
     sr = 44100
     t = np.arange(sr) / sr

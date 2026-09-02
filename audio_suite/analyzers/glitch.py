@@ -9,6 +9,7 @@ Advanced glitch types (zipper noise, buffer underrun, stitching artifacts)
 are deferred to Fase 2/3 and require a labeled corpus per the calibração
 policy (A2).
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -53,7 +54,7 @@ class GlitchAnalyzer(AudioAnalyzer):
             # 1. Click / pop detection via 2nd derivative
             d2 = np.diff(x, n=2)
             if len(d2) > 0:
-                rms_d2 = float(np.sqrt(np.mean(d2 ** 2))) + 1e-12
+                rms_d2 = float(np.sqrt(np.mean(d2**2))) + 1e-12
                 clicks = np.abs(d2) > click_sensitivity * rms_d2
                 # Group adjacent click samples
                 click_ranges = self._runs_bool(clicks, min_run=1)
@@ -61,12 +62,14 @@ class GlitchAnalyzer(AudioAnalyzer):
                     # Translate back to original index (diff shifted by 1)
                     t_start_ms = 1000.0 * max(s - 1, 0) / audio.sample_rate
                     t_end_ms = 1000.0 * e / audio.sample_rate
-                    events.append({
-                        "type": "click",
-                        "time_range_ms": [round(t_start_ms, 3), round(t_end_ms, 3)],
-                        "channel": c,
-                        "amplitude": round(float(np.abs(x[max(s, 0)])), 4),
-                    })
+                    events.append(
+                        {
+                            "type": "click",
+                            "time_range_ms": [round(t_start_ms, 3), round(t_end_ms, 3)],
+                            "channel": c,
+                            "amplitude": round(float(np.abs(x[max(s, 0)])), 4),
+                        }
+                    )
 
             # 2. Dropout detection
             abs_x = np.abs(x)
@@ -84,54 +87,62 @@ class GlitchAnalyzer(AudioAnalyzer):
                 ctx_rms = float(np.sqrt(np.mean(x[ctx_start:ctx_end] ** 2)))
                 if ctx_rms < 10 * dropout_threshold:
                     continue
-                events.append({
-                    "type": "dropout",
-                    "time_range_ms": [
-                        round(1000.0 * s / audio.sample_rate, 3),
-                        round(1000.0 * e / audio.sample_rate, 3),
-                    ],
-                    "channel": c,
-                    "duration_ms": round(1000.0 * (e - s) / audio.sample_rate, 3),
-                })
+                events.append(
+                    {
+                        "type": "dropout",
+                        "time_range_ms": [
+                            round(1000.0 * s / audio.sample_rate, 3),
+                            round(1000.0 * e / audio.sample_rate, 3),
+                        ],
+                        "channel": c,
+                        "duration_ms": round(1000.0 * (e - s) / audio.sample_rate, 3),
+                    }
+                )
 
             # 3. Short digital repetition (buffer stutter)
             rep_events = self._detect_repetition(x, repeat_min_samples)
             for s, length in rep_events:
-                events.append({
-                    "type": "repetition",
-                    "time_range_ms": [
-                        round(1000.0 * s / audio.sample_rate, 3),
-                        round(1000.0 * (s + length) / audio.sample_rate, 3),
-                    ],
-                    "channel": c,
-                    "repeat_length_samples": length,
-                })
+                events.append(
+                    {
+                        "type": "repetition",
+                        "time_range_ms": [
+                            round(1000.0 * s / audio.sample_rate, 3),
+                            round(1000.0 * (s + length) / audio.sample_rate, 3),
+                        ],
+                        "channel": c,
+                        "repeat_length_samples": length,
+                    }
+                )
 
             total_events += len(events)
             if events:
-                findings.append(self._finding(
-                    check_id=f"glitch.channel_{c}",
-                    metric="glitch_event_count",
-                    value=float(len(events)),
-                    unit="events",
-                    status=Status.WARNING,
-                    confidence=0.85,
-                    message=f"{len(events)} glitch events on channel {c}",
-                    time_range_ms=None,
-                    evidence={"events": events[:50]},  # cap to avoid bloat
-                ))
+                findings.append(
+                    self._finding(
+                        check_id=f"glitch.channel_{c}",
+                        metric="glitch_event_count",
+                        value=float(len(events)),
+                        unit="events",
+                        status=Status.WARNING,
+                        confidence=0.85,
+                        message=f"{len(events)} glitch events on channel {c}",
+                        time_range_ms=None,
+                        evidence={"events": events[:50]},  # cap to avoid bloat
+                    )
+                )
 
         if total_events == 0:
-            findings.append(self._finding(
-                check_id="glitch.summary",
-                metric="glitch_event_count",
-                value=0.0,
-                unit="events",
-                status=Status.PASS,
-                confidence=0.95,
-                message="no glitches detected",
-                evidence={"channels_scanned": audio.channels},
-            ))
+            findings.append(
+                self._finding(
+                    check_id="glitch.summary",
+                    metric="glitch_event_count",
+                    value=0.0,
+                    unit="events",
+                    status=Status.PASS,
+                    confidence=0.95,
+                    message="no glitches detected",
+                    evidence={"channels_scanned": audio.channels},
+                )
+            )
         elif total_events >= min_severity_for_warning:
             # Already have per-channel warnings; this is a summary
             pass
@@ -174,8 +185,8 @@ class GlitchAnalyzer(AudioAnalyzer):
             # Compare x[i:i+L] with x[i+L:i+2L]
             i = 0
             while i + 2 * L <= n:
-                a = x[i:i + L]
-                b = x[i + L:i + 2 * L]
+                a = x[i : i + L]
+                b = x[i + L : i + 2 * L]
                 # Use max abs diff as a simple metric
                 diff = float(np.max(np.abs(a - b)))
                 if diff < 1e-6:

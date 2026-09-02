@@ -3,6 +3,7 @@
 Per Fase 2: observation by default. The profile may declare explicit
 min/max bounds to escalate to warning/fail.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -84,21 +85,23 @@ class LraAnalyzer(AudioAnalyzer):
             status = Status.PASS
             msg = f"LRA {lra:.1f} LU (observation)"
 
-        return [self._finding(
-            check_id="lra.range",
-            metric="loudness_range",
-            value=round(float(lra), 2),
-            unit="LU",
-            status=status,
-            confidence=0.9,
-            message=msg,
-            evidence={
-                "min_lu": min_lu,
-                "max_lu": max_lu,
-                "block_ms": 3000,
-                "hop_ms": 1000,
-            },
-        )]
+        return [
+            self._finding(
+                check_id="lra.range",
+                metric="loudness_range",
+                value=round(float(lra), 2),
+                unit="LU",
+                status=status,
+                confidence=0.9,
+                message=msg,
+                evidence={
+                    "min_lu": min_lu,
+                    "max_lu": max_lu,
+                    "block_ms": 3000,
+                    "hop_ms": 1000,
+                },
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {

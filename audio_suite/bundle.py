@@ -6,6 +6,7 @@ Determinism (CT-05):
   - No timestamps in the signed payload
   - measurement_fingerprint = sha256 of canonical JSON
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -18,6 +19,7 @@ from .models import PCM, Bundle, Finding, Profile, aggregate_status
 
 def _canonicalize_findings(findings: list[Finding]) -> list[dict[str, Any]]:
     """Sort + round findings for deterministic JSON."""
+
     def sort_key(f: Finding) -> tuple:
         tr = f.time_range_ms if f.time_range_ms is not None else (-1.0, -1.0)
         return (f.analyzer, f.check_id, float(tr[0]), float(tr[1]))
@@ -100,6 +102,7 @@ def build_bundle(
     signature = None
     if sign:
         from .security.signing import sign_payload
+
         try:
             signature = sign_payload(
                 {

@@ -1,4 +1,5 @@
 """PII redaction — replaces paths and known PII patterns in evidence."""
+
 from __future__ import annotations
 
 import re

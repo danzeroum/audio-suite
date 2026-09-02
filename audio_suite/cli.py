@@ -16,6 +16,7 @@ Exit codes (CLI-01..CLI-20):
   3 INVALID_INPUT       input audio could not be decoded / missing
   64 USAGE              CLI usage error (sysexits.h EX_USAGE)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -75,14 +76,16 @@ def cmd_validate(args: argparse.Namespace) -> int:
         profile = load_profile(args.profile, strict=args.strict)
     except ProfileError as exc:
         return _emit_error(str(exc), ExitCode.INVALID_PROFILE)
-    _print_json({
-        "valid": True,
-        "name": profile.name,
-        "version": profile.version,
-        "analyzers": sorted(profile.analyzers.keys()),
-        "data_classification": profile.data_classification,
-        "strict": profile.is_strict(),
-    })
+    _print_json(
+        {
+            "valid": True,
+            "name": profile.name,
+            "version": profile.version,
+            "analyzers": sorted(profile.analyzers.keys()),
+            "data_classification": profile.data_classification,
+            "strict": profile.is_strict(),
+        }
+    )
     return ExitCode.OK
 
 

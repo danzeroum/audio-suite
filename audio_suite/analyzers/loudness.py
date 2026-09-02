@@ -3,6 +3,7 @@
 This is a measurement analyzer: it returns the value as `observation`-style
 findings. Profile thresholds decide whether to escalate to warning/fail.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -25,6 +26,7 @@ _RLB_FILTER_BA = (
     np.array([1.0, -1.99004745483398, 0.99007225036621]),
 )
 
+
 # Channel weights (L, R, C, LFE, Ls, Rs, ...)
 # Per BS.1770: L=R=C=1.0, LFE=0.0, Ls=Rs=1.41 (when 5.1)
 def _channel_weight(idx: int, n_ch: int, layout: str) -> float:
@@ -40,6 +42,7 @@ def _channel_weight(idx: int, n_ch: int, layout: str) -> float:
 
 def _apply_filter(x: np.ndarray, b: np.ndarray, a: np.ndarray) -> np.ndarray:
     from scipy.signal import lfilter
+
     return lfilter(b, a, x)
 
 

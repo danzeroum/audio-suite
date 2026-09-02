@@ -2,6 +2,7 @@
 
 Also covers Loudness, TruePeak, Clipping (AC-01..AC-13).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -16,6 +17,7 @@ def profile_with(**analyzers) -> Profile:
 
 
 # === AC-01..AC-13: Loudness, True Peak, Clipping ===
+
 
 def test_loudness_clean_signal(sine_1k):
     a = all_analyzers()["loudness"]
@@ -81,6 +83,7 @@ def test_clipping_threshold_param():
     a = all_analyzers()["clipping"]
     # 0.95 amp sine — not clipped, but near ceiling
     import numpy as np
+
     t = np.arange(44100) / 44100
     x = 0.95 * np.sin(2 * np.pi * 1000 * t).astype(np.float32)
     pcm = PCM(samples=x, sample_rate=44100, channel_layout="mono")
@@ -91,6 +94,7 @@ def test_clipping_threshold_param():
 
 
 # === GL-01..GL-12: Glitch ===
+
 
 def test_glitch_clean(sine_1k):
     a = all_analyzers()["glitch"]
@@ -154,6 +158,7 @@ def test_glitch_applicability_short():
 
 # === ST-01..ST-12: Phase / Mono / Balance ===
 
+
 def test_mono_compat_clean(sine_1k_stereo):
     a = all_analyzers()["mono_compat"]
     findings = a.analyze(sine_1k_stereo, {"max_loss_db": 6.0})
@@ -204,6 +209,7 @@ def test_channel_balance_applicability_mono(sine_1k):
 
 # === LP: Loop ===
 
+
 def test_loop_clean_passes(loop_clean):
     a = all_analyzers()["loop"]
     n = loop_clean.n_frames
@@ -236,6 +242,7 @@ def test_loop_applicability_no_loop_point(sine_1k):
 
 # === RS: Resampling ===
 
+
 def test_resampling_clean(sine_1k):
     a = all_analyzers()["resampling"]
     findings = a.analyze(sine_1k, {})
@@ -264,6 +271,7 @@ def test_resampling_does_not_claim_mp3(sine_1k):
 
 
 # === IN: Inspect ===
+
 
 def test_inspect_always_applicable(sine_1k):
     a = all_analyzers()["inspect"]

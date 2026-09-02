@@ -8,6 +8,7 @@ Per Fase 2 RESAMPLING: distinguishes:
 IMPORTANT (rule from the roadmap): does NOT conclude "originally from MP3"
 just because of a spectral cutoff. Such inference requires corpus calibration.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -73,10 +74,12 @@ class ResamplingAnalyzer(AudioAnalyzer):
 
         aliasing_bands: list[dict[str, Any]] = []
         if alias_db > alias_thr:
-            aliasing_bands.append({
-                "center_hz": round(quarter, 1),
-                "level_db": round(alias_db, 2),
-            })
+            aliasing_bands.append(
+                {
+                    "center_hz": round(quarter, 1),
+                    "level_db": round(alias_db, 2),
+                }
+            )
 
         if alias_db > alias_thr:
             status = Status.WARNING
@@ -85,25 +88,27 @@ class ResamplingAnalyzer(AudioAnalyzer):
             status = Status.PASS
             msg = f"no significant aliasing (effective BW {effective_bw_hz:.0f}Hz)"
 
-        return [self._finding(
-            check_id="resampling.artifacts",
-            metric="aliasing_level_db",
-            value=round(float(alias_db), 2),
-            unit="dB",
-            status=status,
-            confidence=0.7,
-            message=msg,
-            evidence={
-                "effective_bandwidth_hz": round(effective_bw_hz, 1),
-                "nyquist_hz": nyq,
-                "aliasing_bands": aliasing_bands,
-                "aliasing_threshold_db": alias_thr,
-                "bandwidth_drop_db": bw_drop_thr,
-            },
-            extra_limitations=[
-                "result is observation-level; not a forensic codec identification",
-            ],
-        )]
+        return [
+            self._finding(
+                check_id="resampling.artifacts",
+                metric="aliasing_level_db",
+                value=round(float(alias_db), 2),
+                unit="dB",
+                status=status,
+                confidence=0.7,
+                message=msg,
+                evidence={
+                    "effective_bandwidth_hz": round(effective_bw_hz, 1),
+                    "nyquist_hz": nyq,
+                    "aliasing_bands": aliasing_bands,
+                    "aliasing_threshold_db": alias_thr,
+                    "bandwidth_drop_db": bw_drop_thr,
+                },
+                extra_limitations=[
+                    "result is observation-level; not a forensic codec identification",
+                ],
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {

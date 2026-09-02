@@ -1,4 +1,5 @@
 """IN-01 to IN-15: SARIF, integration, and end-to-end CLI tests."""
+
 from __future__ import annotations
 
 import json
@@ -19,6 +20,7 @@ PYTHON = sys.executable
 def run_cli(*args: str) -> tuple[int, str, str]:
     import io
     from contextlib import redirect_stderr, redirect_stdout
+
     out, err = io.StringIO(), io.StringIO()
     with redirect_stdout(out), redirect_stderr(err):
         try:
@@ -75,8 +77,7 @@ def test_IN04_sarif_levels_correct():
 
 def test_IN05_json_output_to_file(tmp_path):
     out_path = tmp_path / "report.json"
-    code, _, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"),
-                         "--output", str(out_path))
+    code, _, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"), "--output", str(out_path))
     assert code == ExitCode.OK
     data = json.loads(out_path.read_text())
     assert "findings" in data
@@ -85,8 +86,9 @@ def test_IN05_json_output_to_file(tmp_path):
 
 def test_IN06_sarif_output_to_file(tmp_path):
     out_path = tmp_path / "report.sarif"
-    code, _, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"),
-                         "--format", "sarif", "--output", str(out_path))
+    code, _, _ = run_cli(
+        "analyze", str(FIX / "sine_1k_mono.wav"), "--format", "sarif", "--output", str(out_path)
+    )
     assert code == ExitCode.OK
     data = json.loads(out_path.read_text())
     assert data["version"] == "2.1.0"
@@ -94,8 +96,9 @@ def test_IN06_sarif_output_to_file(tmp_path):
 
 def test_IN07_html_output_to_file(tmp_path):
     out_path = tmp_path / "report.html"
-    code, _, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"),
-                         "--format", "html", "--output", str(out_path))
+    code, _, _ = run_cli(
+        "analyze", str(FIX / "sine_1k_mono.wav"), "--format", "html", "--output", str(out_path)
+    )
     assert code == ExitCode.OK
     html = out_path.read_text()
     assert "<!DOCTYPE html>" in html
@@ -107,7 +110,9 @@ def test_IN08_subprocess_cli_works():
     """The installed entry point `audio-suite` should work via subprocess."""
     result = subprocess.run(
         [PYTHON, "-m", "audio_suite", "--version"],
-        capture_output=True, text=True, cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
     )
     assert result.returncode == 0
     assert "audio-suite" in result.stdout
@@ -147,16 +152,16 @@ def test_IN12_strict_overlay_escalates(tmp_path):
 
 def test_IN13_only_filter():
     """--only should restrict which analyzers run."""
-    code, out, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"),
-                           "--only", "inspect,loudness")
+    code, out, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"), "--only", "inspect,loudness")
     data = json.loads(out)
     analyzers_used = {f["analyzer"] for f in data["findings"]}
     assert analyzers_used <= {"inspect", "loudness"}
 
 
 def test_IN14_skip_filter():
-    code, out, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"),
-                           "--skip", "glitch,resampling,transient,voice_artifacts")
+    code, out, _ = run_cli(
+        "analyze", str(FIX / "sine_1k_mono.wav"), "--skip", "glitch,resampling,transient,voice_artifacts"
+    )
     data = json.loads(out)
     analyzers_used = {f["analyzer"] for f in data["findings"]}
     assert "glitch" not in analyzers_used
@@ -165,15 +170,16 @@ def test_IN14_skip_filter():
 def test_IN15_sign_bundle(tmp_path):
     """Signed bundle should include a valid Ed25519 signature block."""
     from audio_suite.security.signing import generate_keypair
+
     priv, pub = generate_keypair(tmp_path)
-    code, out, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"),
-                           "--sign", "--signing-key", str(priv))
+    code, out, _ = run_cli("analyze", str(FIX / "sine_1k_mono.wav"), "--sign", "--signing-key", str(priv))
     assert code == ExitCode.OK
     data = json.loads(out)
     assert data["signature"] is not None
     assert data["signature"]["signed"] is True
     # Verify the signature
     from audio_suite.security.signing import verify_payload
+
     signed_payload = {
         "tool": data["tool"],
         "subject": data["subject"],

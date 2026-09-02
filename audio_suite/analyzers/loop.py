@@ -8,6 +8,7 @@ A loop is "clean" if both:
   - |x[N-1] - x[0]| < amplitude_threshold   (no DC jump)
   - |x'[N-1] - x'[0]| < derivative_threshold (no click from slope mismatch)
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -46,15 +47,17 @@ class LoopAnalyzer(AudioAnalyzer):
             loop_n = int(audio.sample_rate * loop_ms / 1000.0)
 
         if loop_n <= 1 or loop_n > audio.n_frames:
-            return [self._finding(
-                check_id="loop.point",
-                metric="loop_status",
-                value=None,
-                unit="pass/fail",
-                status=Status.NOT_APPLICABLE,
-                message=f"loop point {loop_n} out of range (1..{audio.n_frames})",
-                evidence={"loop_point_samples": loop_n},
-            )]
+            return [
+                self._finding(
+                    check_id="loop.point",
+                    metric="loop_status",
+                    value=None,
+                    unit="pass/fail",
+                    status=Status.NOT_APPLICABLE,
+                    message=f"loop point {loop_n} out of range (1..{audio.n_frames})",
+                    evidence={"loop_point_samples": loop_n},
+                )
+            ]
 
         results: list = []
         for c in range(audio.channels):
@@ -70,33 +73,32 @@ class LoopAnalyzer(AudioAnalyzer):
 
             if amp_jump > amp_thr or deriv_jump > deriv_thr:
                 status = Status.FAIL
-                msg = (
-                    f"loop boundary discontinuity on ch{c}: "
-                    f"amp={amp_jump:.4f} deriv={deriv_jump:.4f}"
-                )
+                msg = f"loop boundary discontinuity on ch{c}: amp={amp_jump:.4f} deriv={deriv_jump:.4f}"
             else:
                 status = Status.PASS
                 msg = f"loop boundary clean on ch{c}"
 
-            results.append(self._finding(
-                check_id=f"loop.channel_{c}",
-                metric="loop_amplitude_jump",
-                value=round(float(amp_jump), 5),
-                unit="amplitude",
-                status=status,
-                confidence=0.95,
-                message=msg,
-                time_range_ms=(
-                    round(1000.0 * (loop_n - 1) / audio.sample_rate, 3),
-                    round(1000.0 * loop_n / audio.sample_rate, 3),
-                ),
-                evidence={
-                    "loop_point_samples": loop_n,
-                    "amplitude_jump": round(float(amp_jump), 5),
-                    "derivative_jump": round(float(deriv_jump), 5),
-                    "thresholds": {"amp": amp_thr, "deriv": deriv_thr},
-                },
-            ))
+            results.append(
+                self._finding(
+                    check_id=f"loop.channel_{c}",
+                    metric="loop_amplitude_jump",
+                    value=round(float(amp_jump), 5),
+                    unit="amplitude",
+                    status=status,
+                    confidence=0.95,
+                    message=msg,
+                    time_range_ms=(
+                        round(1000.0 * (loop_n - 1) / audio.sample_rate, 3),
+                        round(1000.0 * loop_n / audio.sample_rate, 3),
+                    ),
+                    evidence={
+                        "loop_point_samples": loop_n,
+                        "amplitude_jump": round(float(amp_jump), 5),
+                        "derivative_jump": round(float(deriv_jump), 5),
+                        "thresholds": {"amp": amp_thr, "deriv": deriv_thr},
+                    },
+                )
+            )
 
         return results
 

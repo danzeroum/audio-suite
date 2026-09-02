@@ -1,4 +1,5 @@
 """HTML output — accessible (WCAG 2.1 AA target) per Fase 2.5."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -28,18 +29,16 @@ def bundle_to_html(bundle: Bundle, *, output_path: str | Path | None = None) -> 
         color = _STATUS_COLORS.get(status, "#6b7280")
         tr_ms = f.get("time_range_ms")
         time_str = f"[{tr_ms[0]:.1f}, {tr_ms[1]:.1f}] ms" if tr_ms else "—"
-        value_str = (
-            f"{f['value']:.4g} {f['unit']}" if f.get("value") is not None else "—"
-        )
+        value_str = f"{f['value']:.4g} {f['unit']}" if f.get("value") is not None else "—"
         rows.append(f"""
         <tr>
-          <td scope="row"><code>{f['analyzer']}</code></td>
-          <td><code>{f['check_id']}</code></td>
-          <td>{f.get('metric', '—')}</td>
+          <td scope="row"><code>{f["analyzer"]}</code></td>
+          <td><code>{f["check_id"]}</code></td>
+          <td>{f.get("metric", "—")}</td>
           <td>{value_str}</td>
           <td>{time_str}</td>
           <td><span class="badge" style="background:{color}">{status.value}</span></td>
-          <td>{f.get('message', '')}</td>
+          <td>{f.get("message", "")}</td>
         </tr>""")
 
     aggregate = Status(b["aggregate_status"])
@@ -50,7 +49,7 @@ def bundle_to_html(bundle: Bundle, *, output_path: str | Path | None = None) -> 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>audio-suite report — {b['subject'].get('source_path', 'in-memory')}</title>
+  <title>audio-suite report — {b["subject"].get("source_path", "in-memory")}</title>
   <style>
     body {{ font-family: system-ui, -apple-system, sans-serif; margin: 2rem; color: #1f2937; }}
     h1, h2 {{ color: #111827; }}
@@ -68,16 +67,16 @@ def bundle_to_html(bundle: Bundle, *, output_path: str | Path | None = None) -> 
 <body>
   <h1>audio-suite report</h1>
   <p class="meta">
-    Tool: {b['tool']['name']} v{b['tool']['version']} ·
-    Profile: {b['profile']['name']} v{b['profile']['version']} ·
-    Fingerprint: <code>{b['measurement_fingerprint'][:16]}…</code>
+    Tool: {b["tool"]["name"]} v{b["tool"]["version"]} ·
+    Profile: {b["profile"]["name"]} v{b["profile"]["version"]} ·
+    Fingerprint: <code>{b["measurement_fingerprint"][:16]}…</code>
   </p>
 
   <div class="summary" role="region" aria-label="Summary">
     <h2 style="margin-top:0">Aggregate status: <span class="badge" style="background:{agg_color}">{aggregate.value}</span></h2>
-    <p><strong>Subject:</strong> <code>{b['subject'].get('source_path', 'in-memory')}</code></p>
-    <p><strong>SHA-256:</strong> <code>{b['subject'].get('file_sha256', '—')}</code></p>
-    <p><strong>Duration:</strong> {b['subject'].get('duration_s', 0)} s · <strong>Sample rate:</strong> {b['subject'].get('sample_rate_hz', 0)} Hz · <strong>Channels:</strong> {b['subject'].get('channels', 0)}</p>
+    <p><strong>Subject:</strong> <code>{b["subject"].get("source_path", "in-memory")}</code></p>
+    <p><strong>SHA-256:</strong> <code>{b["subject"].get("file_sha256", "—")}</code></p>
+    <p><strong>Duration:</strong> {b["subject"].get("duration_s", 0)} s · <strong>Sample rate:</strong> {b["subject"].get("sample_rate_hz", 0)} Hz · <strong>Channels:</strong> {b["subject"].get("channels", 0)}</p>
     <p><strong>Findings:</strong> {len(findings)}</p>
   </div>
 
@@ -95,7 +94,7 @@ def bundle_to_html(bundle: Bundle, *, output_path: str | Path | None = None) -> 
       </tr>
     </thead>
     <tbody>
-      {''.join(rows)}
+      {"".join(rows)}
     </tbody>
   </table>
 </body>

@@ -7,6 +7,7 @@ return NEEDS_REVIEW / INDETERMINATE (never auto-conclude).
 These tests document the deferral and ensure that when these analyzers
 ARE added, they comply with the principle of inference (rule 8).
 """
+
 from __future__ import annotations
 
 import pytest
@@ -19,8 +20,7 @@ def test_phase3_analyzers_not_auto_registered():
     stem_sep) are NOT in the default registry. Adding them requires corpus
     + model declaration per A2."""
     ids = set(analyzer_ids())
-    deferred = {"deepfake", "enf_phase", "pitch_stab", "acoustic_context",
-                "stem_sep", "acoustic_fingerprint"}
+    deferred = {"deepfake", "enf_phase", "pitch_stab", "acoustic_context", "stem_sep", "acoustic_fingerprint"}
     for d in deferred:
         assert d not in ids, f"{d} should not be auto-registered without corpus/model"
 
@@ -36,12 +36,14 @@ def test_no_analyzer_claims_deepfake_detection():
 def test_needs_review_status_available():
     """Status.NEEDS_REVIEW must be available for future ML analyzers."""
     from audio_suite.models import Status
+
     assert Status.NEEDS_REVIEW.value == "needs_review"
 
 
 def test_indeterminate_status_available():
     """Status.INDETERMINATE for full-reference analyzers without reference."""
     from audio_suite.models import Status
+
     assert Status.INDETERMINATE.value == "indeterminate"
 
 

@@ -3,6 +3,7 @@
 Importing this module triggers registration of all built-in analyzers.
 External analyzers can be registered via the CARTRIDGE_API (Fase 5).
 """
+
 from __future__ import annotations
 
 from .base import AudioAnalyzer

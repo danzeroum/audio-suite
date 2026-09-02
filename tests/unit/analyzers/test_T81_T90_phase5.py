@@ -3,6 +3,7 @@
 Descriptors must never fail (rule 1). Cartridge API is a future extension
 point; we test that the registry is extensible.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -33,6 +34,7 @@ def test_descriptors_never_fail():
 
 def test_cartridge_api_extensible():
     """External analyzers can be registered via the @register decorator."""
+
     class ExternalAnalyzer(AudioAnalyzer):
         ID = "external_test_only"
         NAME = "External Test"
@@ -44,10 +46,15 @@ def test_cartridge_api_extensible():
             return True
 
         def analyze(self, audio, params):
-            return [self._finding(
-                check_id="ext.test", metric="test", value=1.0,
-                unit="x", status=Status.PASS,
-            )]
+            return [
+                self._finding(
+                    check_id="ext.test",
+                    metric="test",
+                    value=1.0,
+                    unit="x",
+                    status=Status.PASS,
+                )
+            ]
 
         def profile_schema(self):
             return {"type": "object", "additionalProperties": False}
@@ -61,23 +68,40 @@ def test_cartridge_api_extensible():
 
 def test_duplicate_registration_rejected():
     """Re-registering the same ID must fail."""
+
     class A1(AudioAnalyzer):
         ID = "dup_test"
-        NAME = "Dup1"; VERSION = "0.0.1"; METHOD = "t"
+        NAME = "Dup1"
+        VERSION = "0.0.1"
+        METHOD = "t"
         DEFAULT_LIMITATIONS = ["x"]
-        def applicable(self, audio, profile): return True
-        def analyze(self, audio, params): return []
-        def profile_schema(self): return {"type": "object"}
+
+        def applicable(self, audio, profile):
+            return True
+
+        def analyze(self, audio, params):
+            return []
+
+        def profile_schema(self):
+            return {"type": "object"}
 
     register(A1)
 
     class A2(AudioAnalyzer):
         ID = "dup_test"  # same ID
-        NAME = "Dup2"; VERSION = "0.0.1"; METHOD = "t"
+        NAME = "Dup2"
+        VERSION = "0.0.1"
+        METHOD = "t"
         DEFAULT_LIMITATIONS = ["x"]
-        def applicable(self, audio, profile): return True
-        def analyze(self, audio, params): return []
-        def profile_schema(self): return {"type": "object"}
+
+        def applicable(self, audio, profile):
+            return True
+
+        def analyze(self, audio, params):
+            return []
+
+        def profile_schema(self):
+            return {"type": "object"}
 
     with pytest.raises(ValueError, match="duplicate"):
         register(A2)

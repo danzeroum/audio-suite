@@ -1,4 +1,5 @@
 """SG-01 to SG-12: Ed25519 signing tests."""
+
 from __future__ import annotations
 
 import json
@@ -19,7 +20,7 @@ def test_SG01_generate_keypair(tmp_path):
     assert priv.exists()
     assert pub.exists()
     assert priv.stat().st_size == 32  # Ed25519 private key seed
-    assert pub.stat().st_size == 32   # Ed25519 public key
+    assert pub.stat().st_size == 32  # Ed25519 public key
 
 
 def test_SG02_sign_and_verify(tmp_path):
@@ -42,6 +43,7 @@ def test_SG03_tamper_detection(tmp_path):
 def test_SG04_unsigned_mode_safe():
     """When no key is provided and env var unset, signing raises (safe failure)."""
     import os
+
     # Ensure env var is not set
     old = os.environ.pop("AUDIO_SUITE_SIGNING_KEY", None)
     try:
@@ -58,6 +60,7 @@ def test_SG05_env_var_key():
     import os
 
     from nacl.signing import SigningKey
+
     sk = SigningKey.generate()
     env_value = base64.b64encode(bytes(sk)).decode("ascii")
     old = os.environ.get("AUDIO_SUITE_SIGNING_KEY")
@@ -81,6 +84,7 @@ def test_SG06_signature_block_format(tmp_path):
     assert "signature" in sig
     # base64 decodable
     import base64
+
     base64.b64decode(sig["public_key"])
     base64.b64decode(sig["signature"])
 
@@ -104,6 +108,7 @@ def test_SG08_verify_rejects_missing_fields():
 def test_SG09_key_file_permissions(tmp_path):
     """Private key file should have 0600 permissions."""
     import os
+
     priv, pub = generate_keypair(tmp_path)
     mode = priv.stat().st_mode & 0o777
     assert mode == 0o600, f"private key has mode {oct(mode)}"
@@ -120,9 +125,11 @@ def test_SG11_pii_redact_userpath():
 
 
 def test_SG12_pii_redact_recursive():
-    out = redact_pii({
-        "a": {"b": ["user@foo.com", "normal"]},
-        "c": ("/Users/jane/x",),
-    })
+    out = redact_pii(
+        {
+            "a": {"b": ["user@foo.com", "normal"]},
+            "c": ("/Users/jane/x",),
+        }
+    )
     assert out["a"]["b"][0] == "[REDACTED:email]"
     assert "[REDACTED:userpath]" in out["c"][0]

@@ -2,6 +2,7 @@
 
 Spec: https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html
 """
+
 from __future__ import annotations
 
 import json
@@ -37,19 +38,19 @@ def bundle_to_sarif(bundle: Bundle, *, output_path: str | Path | None = None) ->
     for f in b["findings"]:
         rule_id = f"{f['analyzer']}/{f['check_id']}"
         if rule_id not in seen_rules:
-            rules.append({
-                "id": rule_id,
-                "name": f["check_id"],
-                "shortDescription": {"text": f.get("message", "")[:200]},
-                "fullDescription": {
-                    "text": " ".join(f.get("limitations", [])) or f.get("method", "")
-                },
-                "helpUri": "https://github.com/audio-suite/audio-suite",
-                "properties": {
-                    "analyzer": f["analyzer"],
-                    "method": f.get("method", ""),
-                },
-            })
+            rules.append(
+                {
+                    "id": rule_id,
+                    "name": f["check_id"],
+                    "shortDescription": {"text": f.get("message", "")[:200]},
+                    "fullDescription": {"text": " ".join(f.get("limitations", [])) or f.get("method", "")},
+                    "helpUri": "https://github.com/audio-suite/audio-suite",
+                    "properties": {
+                        "analyzer": f["analyzer"],
+                        "method": f.get("method", ""),
+                    },
+                }
+            )
             seen_rules.add(rule_id)
 
         status = Status(f["status"])
@@ -69,41 +70,47 @@ def bundle_to_sarif(bundle: Bundle, *, output_path: str | Path | None = None) ->
                 },
             }
 
-        results.append({
-            "ruleId": rule_id,
-            "level": status_to_sarif_level(status),
-            "message": {"text": f.get("message", "")},
-            "locations": [location],
-            "properties": {
-                "metric": f.get("metric"),
-                "value": f.get("value"),
-                "unit": f.get("unit"),
-                "confidence": f.get("confidence"),
-                "limitations": f.get("limitations", []),
-            },
-            "partialFingerprints": {
-                "metric/v1": f"{f.get('analyzer')}:{f.get('check_id')}:{f.get('value')}",
-            },
-        })
+        results.append(
+            {
+                "ruleId": rule_id,
+                "level": status_to_sarif_level(status),
+                "message": {"text": f.get("message", "")},
+                "locations": [location],
+                "properties": {
+                    "metric": f.get("metric"),
+                    "value": f.get("value"),
+                    "unit": f.get("unit"),
+                    "confidence": f.get("confidence"),
+                    "limitations": f.get("limitations", []),
+                },
+                "partialFingerprints": {
+                    "metric/v1": f"{f.get('analyzer')}:{f.get('check_id')}:{f.get('value')}",
+                },
+            }
+        )
 
     sarif = {
         "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/schemas/sarif-schema-2.1.0.json",
         "version": "2.1.0",
-        "runs": [{
-            "tool": {
-                "driver": {
-                    "name": b["tool"]["name"],
-                    "version": b["tool"]["version"],
-                    "informationUri": "https://github.com/audio-suite/audio-suite",
-                    "rules": rules,
-                }
-            },
-            "results": results,
-            "invocations": [{
-                "executionSuccessful": True,
-                "toolExecutionNotifications": [],
-            }],
-        }],
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": b["tool"]["name"],
+                        "version": b["tool"]["version"],
+                        "informationUri": "https://github.com/audio-suite/audio-suite",
+                        "rules": rules,
+                    }
+                },
+                "results": results,
+                "invocations": [
+                    {
+                        "executionSuccessful": True,
+                        "toolExecutionNotifications": [],
+                    }
+                ],
+            }
+        ],
     }
 
     if output_path is not None:

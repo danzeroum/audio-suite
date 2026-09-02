@@ -1,4 +1,5 @@
 """CT-01 to CT-15: Cross-cutting tests mandatory for every analyzer."""
+
 from __future__ import annotations
 
 import copy
@@ -19,7 +20,9 @@ def make_pcm(n_seconds: float = 1.0, channels: int = 1, sr: int = SR, freq: floa
     x = (0.3 * np.sin(2 * np.pi * freq * t)).astype(np.float32)
     if channels > 1:
         x = np.stack([x] * channels)
-    return PCM(samples=x, sample_rate=sr, channel_layout={1: "mono", 2: "stereo"}.get(channels, f"{channels}ch"))
+    return PCM(
+        samples=x, sample_rate=sr, channel_layout={1: "mono", 2: "stereo"}.get(channels, f"{channels}ch")
+    )
 
 
 # CT-01: every analyzer is registered with ID, version, name, method, schema
@@ -33,11 +36,15 @@ def test_CT01_registration_metadata():
 # CT-02: invalid profile fails before analysis
 def test_CT02_invalid_profile_fails_early():
     from audio_suite.policy import validate_profile
+
     with pytest.raises(Exception):
-        validate_profile({
-            "name": "t", "version": "1",
-            "analyzers": {"nonexistent_analyzer": {}},
-        })
+        validate_profile(
+            {
+                "name": "t",
+                "version": "1",
+                "analyzers": {"nonexistent_analyzer": {}},
+            }
+        )
 
 
 # CT-03: inapplicable analyzer returns NOT_APPLICABLE
@@ -50,9 +57,11 @@ def test_CT03_inapplicable_returns_status(sine_1k):
 
 # CT-04: missing reference returns structured error (not crash)
 def test_CT04_missing_reference(sine_1k):
-    profile = Profile(name="t", version="1", analyzers={
-        "ref_quality": {"mode": "speech-full-ref", "reference_path": "/nonexistent.wav"}
-    })
+    profile = Profile(
+        name="t",
+        version="1",
+        analyzers={"ref_quality": {"mode": "speech-full-ref", "reference_path": "/nonexistent.wav"}},
+    )
     findings = run_analyzers(sine_1k, profile)
     assert len(findings) == 1
     assert findings[0].status == Status.ERROR
@@ -60,10 +69,17 @@ def test_CT04_missing_reference(sine_1k):
 
 # CT-05: determinism — same input, same output
 def test_CT05_determinism(sine_1k):
-    profile = Profile(name="t", version="1", analyzers={
-        "loudness": {}, "true_peak": {}, "clipping": {},
-        "spectral_health": {}, "inspect": {},
-    })
+    profile = Profile(
+        name="t",
+        version="1",
+        analyzers={
+            "loudness": {},
+            "true_peak": {},
+            "clipping": {},
+            "spectral_health": {},
+            "inspect": {},
+        },
+    )
     f1 = run_analyzers(sine_1k, profile)
     f2 = run_analyzers(sine_1k, profile)
     assert len(f1) == len(f2)
@@ -77,10 +93,17 @@ def test_CT05_determinism(sine_1k):
 # CT-06: analyzer does not mutate PCM
 def test_CT06_no_mutation(sine_1k):
     samples_before = sine_1k.samples.copy()
-    profile = Profile(name="t", version="1", analyzers={
-        "loudness": {}, "clipping": {}, "glitch": {},
-        "spectral_health": {}, "inspect": {},
-    })
+    profile = Profile(
+        name="t",
+        version="1",
+        analyzers={
+            "loudness": {},
+            "clipping": {},
+            "glitch": {},
+            "spectral_health": {},
+            "inspect": {},
+        },
+    )
     run_analyzers(sine_1k, profile)
     np.testing.assert_array_equal(sine_1k.samples, samples_before)
 
@@ -89,9 +112,15 @@ def test_CT06_no_mutation(sine_1k):
 def test_CT07_multichannel():
     for ch in [1, 2]:
         pcm = make_pcm(channels=ch)
-        profile = Profile(name="t", version="1", analyzers={
-            "loudness": {}, "clipping": {}, "spectral_health": {},
-        })
+        profile = Profile(
+            name="t",
+            version="1",
+            analyzers={
+                "loudness": {},
+                "clipping": {},
+                "spectral_health": {},
+            },
+        )
         findings = run_analyzers(pcm, profile)
         assert len(findings) > 0
 
@@ -121,14 +150,27 @@ def test_CT09_durations():
 
 # CT-10: no NaN or Infinity in findings
 def test_CT10_no_nan_inf(sine_1k):
-    profile = Profile(name="t", version="1", analyzers={
-        "loudness": {}, "true_peak": {}, "clipping": {}, "spectral_health": {},
-        "lra": {}, "glitch": {}, "resampling": {}, "transient": {},
-        "voice_artifacts": {}, "inspect": {}, "codec_conf": {},
-    })
+    profile = Profile(
+        name="t",
+        version="1",
+        analyzers={
+            "loudness": {},
+            "true_peak": {},
+            "clipping": {},
+            "spectral_health": {},
+            "lra": {},
+            "glitch": {},
+            "resampling": {},
+            "transient": {},
+            "voice_artifacts": {},
+            "inspect": {},
+            "codec_conf": {},
+        },
+    )
     findings = run_analyzers(sine_1k, profile)
     for f in findings:
         d = f.to_dict()
+
         # Recursive NaN check
         def _check(obj):
             if isinstance(obj, float):
@@ -140,6 +182,7 @@ def test_CT10_no_nan_inf(sine_1k):
             elif isinstance(obj, list):
                 for v in obj:
                     _check(v)
+
         _check(d)
 
 
@@ -170,11 +213,17 @@ def test_CT13_exceptions_become_error():
 
     class BoomAnalyzer(AudioAnalyzer):
         ID = "boom_test"
-        NAME = "Boom"; VERSION = "0.0.1"; METHOD = "raises"
+        NAME = "Boom"
+        VERSION = "0.0.1"
+        METHOD = "raises"
         DEFAULT_LIMITATIONS = ["always raises"]
-        def applicable(self, audio, profile): return True
+
+        def applicable(self, audio, profile):
+            return True
+
         def analyze(self, audio, params):
             raise RuntimeError("intentional boom")
+
         def profile_schema(self):
             return {"type": "object", "additionalProperties": False}
 
@@ -196,14 +245,21 @@ def test_CT14_policy_separation(sine_1k):
     the strict_overlay can escalate WARNING -> FAIL but not the reverse."""
     from audio_suite.models import Finding
     from audio_suite.policy import apply_policy
+
     # A WARNING finding
     f = Finding(
-        check_id="x", analyzer="clipping", metric="clipped_sample_pct",
-        value=0.5, unit="%", status=Status.WARNING,
+        check_id="x",
+        analyzer="clipping",
+        metric="clipped_sample_pct",
+        value=0.5,
+        unit="%",
+        status=Status.WARNING,
     )
     # Profile with strict_overlay that escalates this metric to fail
     profile_strict = Profile(
-        name="t", version="1", analyzers={},
+        name="t",
+        version="1",
+        analyzers={},
         strict_overlay={"clipping": {"clipped_sample_pct": "fail"}},
     )
     escalated = apply_policy(f, profile_strict)
@@ -219,6 +275,7 @@ def test_CT15_regression_test_infrastructure():
     """Ensure fixtures/manifest.json exists and is loadable."""
     import json
     from pathlib import Path
+
     manifest_path = Path(__file__).resolve().parents[2] / "fixtures" / "generated" / "manifest.json"
     assert manifest_path.exists(), "fixtures manifest missing; run scripts/gen_fixtures.py"
     manifest = json.loads(manifest_path.read_text())

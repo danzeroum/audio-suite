@@ -6,6 +6,7 @@ Per A3 (Decisão pertence ao profile) and A5 (--strict is overlay, not auto-fail
   - The profile's `strict_overlay` block is applied ONLY when --strict is set,
     and it lists explicit status overrides (warning->fail etc.).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -59,9 +60,7 @@ def validate_profile(raw: dict[str, Any], *, strict: bool = False) -> Profile:
     validated: dict[str, dict[str, Any]] = {}
     for aid, params in analyzers_raw.items():
         if aid not in available:
-            raise ProfileError(
-                f"unknown analyzer '{aid}'; available: {sorted(available)}"
-            )
+            raise ProfileError(f"unknown analyzer '{aid}'; available: {sorted(available)}")
         if params is None:
             params = {}
         if not isinstance(params, dict):
@@ -70,9 +69,7 @@ def validate_profile(raw: dict[str, Any], *, strict: bool = False) -> Profile:
         try:
             validate(instance=params, schema=schema)
         except ValidationError as exc:
-            raise ProfileError(
-                f"params for '{aid}' failed schema: {exc.message}"
-            ) from exc
+            raise ProfileError(f"params for '{aid}' failed schema: {exc.message}") from exc
         validated[aid] = dict(params)
 
     strict_overlay = raw.get("strict_overlay", {})
@@ -89,9 +86,7 @@ def validate_profile(raw: dict[str, Any], *, strict: bool = False) -> Profile:
 
     classification = raw.get("data_classification", "internal")
     if classification not in {"public", "internal", "confidential", "restricted"}:
-        raise ProfileError(
-            "data_classification must be one of public/internal/confidential/restricted"
-        )
+        raise ProfileError("data_classification must be one of public/internal/confidential/restricted")
 
     return Profile(
         name=str(raw["name"]),
@@ -119,6 +114,7 @@ def apply_policy(finding: Finding, profile: Profile) -> Finding:
     warning, treat it as fail", NOT "always fail this metric".
     """
     from .models import status_rank
+
     if not profile.is_strict():
         return finding
     # Only escalate findings that are already flagged (warning / needs_review).

@@ -1,4 +1,5 @@
 """Output formatters: JSON, SARIF 2.1.0, HTML."""
+
 from __future__ import annotations
 
 from .html_out import bundle_to_html

@@ -3,6 +3,7 @@
 All models are immutable dataclasses (frozen=True) so analyzers cannot mutate
 shared state — this is a hard requirement from CT-06 (Não mutação).
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -68,6 +69,7 @@ class PCM:
         source_path: original file path (may be empty for in-memory PCM).
         provenance: dict with decoder metadata (codec, bit_depth, etc.).
     """
+
     samples: np.ndarray
     sample_rate: int
     channel_layout: str = "mono"
@@ -80,9 +82,7 @@ class PCM:
         if self.samples.dtype != np.float32:
             object.__setattr__(self, "samples", self.samples.astype(np.float32, copy=False))
         if self.samples.ndim == 1:
-            object.__setattr__(
-                self, "samples", self.samples.reshape(1, -1)
-            )
+            object.__setattr__(self, "samples", self.samples.reshape(1, -1))
 
     @property
     def channels(self) -> int:
@@ -127,6 +127,7 @@ class Finding:
     applicability, method, limitations and (for probabilistic analyzers)
     a confidence value.
     """
+
     check_id: str
     analyzer: str
     metric: str
@@ -185,6 +186,7 @@ class Profile:
       - the strict overlay policy (--strict)
       - retention / governance metadata
     """
+
     name: str
     version: str
     analyzers: dict[str, dict[str, Any]]
@@ -211,6 +213,7 @@ class Bundle:
     byte-identical JSON. We sort keys, round floats, and exclude timestamps
     from the signed payload.
     """
+
     schema_version: str
     tool: dict[str, Any]
     subject: dict[str, Any]
@@ -238,7 +241,7 @@ class Bundle:
 # ---------------------------------------------------------------------------
 class ExitCode:
     OK = 0
-    FINDING = 1          # analysis ran, at least one fail-level finding
+    FINDING = 1  # analysis ran, at least one fail-level finding
     INVALID_PROFILE = 2  # profile YAML failed validation
-    INVALID_INPUT = 3    # input audio could not be decoded / missing
-    USAGE = 64           # CLI usage error (sysexits.h EX_USAGE)
+    INVALID_INPUT = 3  # input audio could not be decoded / missing
+    USAGE = 64  # CLI usage error (sysexits.h EX_USAGE)

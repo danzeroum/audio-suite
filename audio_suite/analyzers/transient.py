@@ -3,6 +3,7 @@
 Per Fase 2 TRANSIENT. Heuristic based on attack-time measurement on the
 strongest onsets.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -82,28 +83,32 @@ class TransientAnalyzer(AudioAnalyzer):
         env = _envelope(x)
         onsets = _detect_onsets(env, audio.sample_rate)
         if not onsets:
-            return [self._finding(
-                check_id="transient.smearing",
-                metric="attack_time_ms",
-                value=None,
-                unit="ms",
-                status=Status.NOT_APPLICABLE,
-                message="no onsets detected; transient analysis not applicable",
-                evidence={"onsets_detected": 0},
-            )]
+            return [
+                self._finding(
+                    check_id="transient.smearing",
+                    metric="attack_time_ms",
+                    value=None,
+                    unit="ms",
+                    status=Status.NOT_APPLICABLE,
+                    message="no onsets detected; transient analysis not applicable",
+                    evidence={"onsets_detected": 0},
+                )
+            ]
 
         attacks = [_attack_time_ms(env, o, audio.sample_rate) for o in onsets[:20]]
         attacks = [a for a in attacks if a > 0]
         if not attacks:
-            return [self._finding(
-                check_id="transient.smearing",
-                metric="attack_time_ms",
-                value=None,
-                unit="ms",
-                status=Status.NOT_APPLICABLE,
-                message="onsets found but attack time undetermined",
-                evidence={"onsets_detected": len(onsets)},
-            )]
+            return [
+                self._finding(
+                    check_id="transient.smearing",
+                    metric="attack_time_ms",
+                    value=None,
+                    unit="ms",
+                    status=Status.NOT_APPLICABLE,
+                    message="onsets found but attack time undetermined",
+                    evidence={"onsets_detected": len(onsets)},
+                )
+            ]
 
         worst = max(attacks)
         mean = float(np.mean(attacks))
@@ -114,21 +119,23 @@ class TransientAnalyzer(AudioAnalyzer):
             status = Status.PASS
             msg = f"transient attack ok: worst {worst:.2f}ms"
 
-        return [self._finding(
-            check_id="transient.smearing",
-            metric="attack_time_ms",
-            value=round(float(worst), 3),
-            unit="ms",
-            status=status,
-            confidence=0.75,
-            message=msg,
-            evidence={
-                "worst_attack_ms": round(float(worst), 3),
-                "mean_attack_ms": round(mean, 3),
-                "onsets_detected": len(onsets),
-                "max_attack_ms": max_attack_ms,
-            },
-        )]
+        return [
+            self._finding(
+                check_id="transient.smearing",
+                metric="attack_time_ms",
+                value=round(float(worst), 3),
+                unit="ms",
+                status=status,
+                confidence=0.75,
+                message=msg,
+                evidence={
+                    "worst_attack_ms": round(float(worst), 3),
+                    "mean_attack_ms": round(mean, 3),
+                    "onsets_detected": len(onsets),
+                    "max_attack_ms": max_attack_ms,
+                },
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {

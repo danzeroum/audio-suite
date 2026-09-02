@@ -6,6 +6,7 @@ decision. The analyzer reports the measurement.
 
 Uses the profile's downmix matrix if provided; defaults to (L+R)/2.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -18,12 +19,12 @@ from .base import AudioAnalyzer
 
 # Standard frequency bands (Hz) for per-band analysis
 DEFAULT_BANDS_HZ = [
-    (20, 120),     # sub bass
-    (120, 400),    # bass
-    (400, 1200),   # low mid
+    (20, 120),  # sub bass
+    (120, 400),  # bass
+    (400, 1200),  # low mid
     (1200, 4000),  # mid
-    (4000, 12000), # high mid
-    (12000, 20000),# high
+    (4000, 12000),  # high mid
+    (12000, 20000),  # high
 ]
 
 
@@ -32,13 +33,14 @@ def _band_energy_db(x: np.ndarray, sr: int, f_lo: float, f_hi: float) -> float:
     if len(x) == 0:
         return -120.0
     from scipy.signal import butter, sosfilt
+
     nyq = sr / 2.0
     f_hi = min(f_hi, nyq - 1)
     if f_lo >= f_hi:
         return -120.0
     sos = butter(4, [f_lo / nyq, f_hi / nyq], btype="bandpass", output="sos")
     y = sosfilt(sos, x)
-    rms = float(np.sqrt(np.mean(y ** 2))) + 1e-12
+    rms = float(np.sqrt(np.mean(y**2))) + 1e-12
     return 20 * np.log10(rms)
 
 
@@ -84,11 +86,13 @@ class MonoCompatAnalyzer(AudioAnalyzer):
             loss = ref - eM  # positive = loss
             if not np.isfinite(loss):
                 loss = 0.0
-            band_results.append({
-                "band_hz": [f_lo, f_hi],
-                "loss_db": round(loss, 2),
-                "mono_energy_db": round(eM, 2),
-            })
+            band_results.append(
+                {
+                    "band_hz": [f_lo, f_hi],
+                    "loss_db": round(loss, 2),
+                    "mono_energy_db": round(eM, 2),
+                }
+            )
             worst_loss = max(worst_loss, loss)
 
         critical_windows = [b for b in band_results if b["loss_db"] >= max_loss_db]

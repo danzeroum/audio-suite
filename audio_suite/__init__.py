@@ -10,6 +10,7 @@ The package is organized in layers:
   - security: Ed25519 signing, PII redaction, audit log
   - cli: the command-line entry point
 """
+
 from __future__ import annotations
 
 __version__ = "0.1.0"

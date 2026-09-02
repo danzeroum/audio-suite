@@ -1,4 +1,5 @@
 """Property-based tests (Hypothesis) for invariants."""
+
 from __future__ import annotations
 
 import hashlib
@@ -16,10 +17,7 @@ from audio_suite.models import PCM, Status, aggregate_status, status_rank
 
 # Property 1: Normalizing twice the same PCM doesn't change its identity
 # (here we test that the PCM class is idempotent on construction)
-@given(
-    arrays(np.float32, shape=(1, 100),
-           elements=st.floats(min_value=-1.0, max_value=1.0, width=32))
-)
+@given(arrays(np.float32, shape=(1, 100), elements=st.floats(min_value=-1.0, max_value=1.0, width=32)))
 def test_pcm_construction_idempotent(samples):
     pcm1 = PCM(samples=samples, sample_rate=44100)
     # Re-wrap the same samples
@@ -49,7 +47,8 @@ def test_sha256_byte_change(tmp_path):
 @given(
     st.lists(
         st.sampled_from(list(Status)),
-        min_size=0, max_size=20,
+        min_size=0,
+        max_size=20,
     )
 )
 def test_aggregate_monotonic(statuses):
@@ -66,11 +65,11 @@ def test_aggregate_monotonic(statuses):
 # the same findings in different orders must produce the same fingerprint).
 def test_fingerprint_order_independent():
     from audio_suite.models import Finding
-    f1 = Finding(check_id="a", analyzer="z", metric="m",
-                 value=1.0, unit="x", status=Status.PASS)
-    f2 = Finding(check_id="b", analyzer="a", metric="m",
-                 value=2.0, unit="x", status=Status.WARNING)
+
+    f1 = Finding(check_id="a", analyzer="z", metric="m", value=1.0, unit="x", status=Status.PASS)
+    f2 = Finding(check_id="b", analyzer="a", metric="m", value=2.0, unit="x", status=Status.WARNING)
     from audio_suite.bundle import _canonicalize_findings
+
     canon1 = _canonicalize_findings([f1, f2])
     canon2 = _canonicalize_findings([f2, f1])  # different input order
     assert measurement_fingerprint(canon1) == measurement_fingerprint(canon2)
@@ -80,8 +79,8 @@ def test_fingerprint_order_independent():
 @given(st.floats(allow_nan=True, allow_infinity=True))
 def test_no_nan_in_finding(value):
     from audio_suite.models import Finding
-    f = Finding(check_id="x", analyzer="t", metric="m",
-                value=value, unit="x", status=Status.PASS)
+
+    f = Finding(check_id="x", analyzer="t", metric="m", value=value, unit="x", status=Status.PASS)
     d = f.to_dict()
     if d["value"] is not None:
         assert not np.isnan(d["value"])
@@ -92,11 +91,11 @@ def test_no_nan_in_finding(value):
 def test_tamper_detection():
     """Changing any finding value changes the fingerprint."""
     from audio_suite.models import Finding
-    f1 = Finding(check_id="a", analyzer="t", metric="m",
-                 value=1.0, unit="x", status=Status.PASS)
-    f2 = Finding(check_id="a", analyzer="t", metric="m",
-                 value=2.0, unit="x", status=Status.PASS)
+
+    f1 = Finding(check_id="a", analyzer="t", metric="m", value=1.0, unit="x", status=Status.PASS)
+    f2 = Finding(check_id="a", analyzer="t", metric="m", value=2.0, unit="x", status=Status.PASS)
     from audio_suite.bundle import _canonicalize_findings
+
     fp1 = measurement_fingerprint(_canonicalize_findings([f1]))
     fp2 = measurement_fingerprint(_canonicalize_findings([f2]))
     assert fp1 != fp2

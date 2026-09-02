@@ -3,6 +3,7 @@
 These tests tie everything together: full pipeline runs, signed bundles,
 tamper detection, SARIF validity, profile governance, and CI smoke tests.
 """
+
 from __future__ import annotations
 
 import json
@@ -24,6 +25,7 @@ PYTHON = sys.executable
 def run_cli(*args: str) -> tuple[int, str, str]:
     import io
     from contextlib import redirect_stderr, redirect_stdout
+
     out, err = io.StringIO(), io.StringIO()
     with redirect_stdout(out), redirect_stderr(err):
         try:
@@ -37,7 +39,9 @@ def run_cli(*args: str) -> tuple[int, str, str]:
 def test_T91_ci_version_smoke():
     result = subprocess.run(
         [PYTHON, "-m", "audio_suite", "--version"],
-        capture_output=True, text=True, cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
     )
     assert result.returncode == 0
     assert "audio-suite" in result.stdout
@@ -47,7 +51,9 @@ def test_T91_ci_version_smoke():
 def test_T92_ci_inspect_smoke():
     result = subprocess.run(
         [PYTHON, "-m", "audio_suite", "inspect", str(FIX / "sine_1k_mono.wav")],
-        capture_output=True, text=True, cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
     )
     assert result.returncode == 0
     data = json.loads(result.stdout)
@@ -58,7 +64,9 @@ def test_T92_ci_inspect_smoke():
 def test_T93_ci_analyze_clean_smoke():
     result = subprocess.run(
         [PYTHON, "-m", "audio_suite", "analyze", str(FIX / "sine_1k_mono.wav")],
-        capture_output=True, text=True, cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
     )
     assert result.returncode == 0
     data = json.loads(result.stdout)
@@ -69,7 +77,9 @@ def test_T93_ci_analyze_clean_smoke():
 def test_T94_ci_analyze_clipped_smoke():
     result = subprocess.run(
         [PYTHON, "-m", "audio_suite", "analyze", str(FIX / "clipped.wav")],
-        capture_output=True, text=True, cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
     )
     assert result.returncode == 1
     data = json.loads(result.stdout)
@@ -95,6 +105,7 @@ def test_T95_sarif_github_compatible():
 # T-96: Ed25519 sign + verify roundtrip
 def test_T96_sign_verify_roundtrip(tmp_path):
     from audio_suite.security.signing import generate_keypair, sign_payload, verify_payload
+
     priv, pub = generate_keypair(tmp_path)
     payload = {"tool": "audio-suite", "findings": [{"a": 1}]}
     sig = sign_payload(payload, key_path=str(priv))
@@ -104,6 +115,7 @@ def test_T96_sign_verify_roundtrip(tmp_path):
 # T-97: Tamper detection on signed bundle
 def test_T97_bundle_tamper_detection(tmp_path):
     from audio_suite.security.signing import generate_keypair, sign_payload, verify_payload
+
     priv, pub = generate_keypair(tmp_path)
     payload = {"a": 1, "b": 2}
     sig = sign_payload(payload, key_path=str(priv))
@@ -115,21 +127,27 @@ def test_T97_bundle_tamper_detection(tmp_path):
 # T-98: Profile governance — data_classification enforced
 def test_T98_data_classification_validated():
     with pytest.raises(Exception, match="data_classification"):
-        validate_profile({
-            "name": "t", "version": "1",
-            "analyzers": {},
-            "data_classification": "top-secret",  # invalid
-        })
+        validate_profile(
+            {
+                "name": "t",
+                "version": "1",
+                "analyzers": {},
+                "data_classification": "top-secret",  # invalid
+            }
+        )
 
 
 # T-99: Profile governance — retention_policy is a mapping
 def test_T99_retention_policy_validated():
     with pytest.raises(Exception, match="retention_policy"):
-        validate_profile({
-            "name": "t", "version": "1",
-            "analyzers": {},
-            "retention_policy": "should-be-dict",
-        })
+        validate_profile(
+            {
+                "name": "t",
+                "version": "1",
+                "analyzers": {},
+                "retention_policy": "should-be-dict",
+            }
+        )
 
 
 # T-100: Default profile loads successfully
@@ -150,6 +168,7 @@ def test_T101_strict_profile_loads():
 # T-102: PII redaction applied to bundle
 def test_T102_pii_redaction_in_bundle():
     from audio_suite.security.pii import redact_pii
+
     fake_bundle = {
         "subject": {"source_path": "/home/john/audio/secret.wav"},
         "findings": [{"email": "user@foo.com"}],
@@ -167,6 +186,7 @@ def test_T103_fixture_manifest_consistent():
         if path.exists() and path.stat().st_size > 0:
             # Verify sha256 matches
             from audio_suite.decode import sha256_of_file
+
             actual = sha256_of_file(path)
             assert actual == meta["sha256"], f"sha mismatch for {name}"
 
@@ -174,6 +194,7 @@ def test_T103_fixture_manifest_consistent():
 # T-104: Analyzer contract — every analyzer has schema, applicable, analyze
 def test_T104_analyzer_contract_complete():
     from audio_suite.analyzers import all_analyzers
+
     for aid, a in all_analyzers().items():
         assert callable(a.applicable)
         assert callable(a.analyze)
@@ -212,12 +233,17 @@ def test_T108_invalid_profile(tmp_path):
 # T-109: Full signed bundle pipeline end-to-end
 def test_T109_full_signed_pipeline(tmp_path):
     from audio_suite.security.signing import generate_keypair, verify_payload
+
     priv, pub = generate_keypair(tmp_path)
     out_path = tmp_path / "signed.json"
     code, _, _ = run_cli(
-        "analyze", str(FIX / "sine_1k_mono.wav"),
-        "--sign", "--signing-key", str(priv),
-        "--output", str(out_path),
+        "analyze",
+        str(FIX / "sine_1k_mono.wav"),
+        "--sign",
+        "--signing-key",
+        str(priv),
+        "--output",
+        str(out_path),
     )
     assert code == ExitCode.OK
     data = json.loads(out_path.read_text())

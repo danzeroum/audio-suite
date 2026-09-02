@@ -12,6 +12,7 @@ The simplified implementations here are NOT the reference algorithms — they
 are deterministic proxies suitable for CI gating. Production deployments
 should swap in the official Visqol/SI-SDR packages and bump the version.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -34,10 +35,10 @@ def _align(ref: np.ndarray, deg: np.ndarray, sr: int) -> tuple[np.ndarray, np.nd
     lag = int(np.argmax(np.abs(corr)) - (len(deg) - 1))
     if lag > 0:
         ref = ref[lag:]
-        deg = deg[:len(ref)]
+        deg = deg[: len(ref)]
     elif lag < 0:
         deg = deg[-lag:]
-        ref = ref[:len(deg)]
+        ref = ref[: len(deg)]
     return ref, deg
 
 
@@ -56,8 +57,8 @@ def _stoi_like(ref: np.ndarray, deg: np.ndarray, sr: int) -> float:
     win = 256
     scores = []
     for i in range(0, n - win, win // 2):
-        a = ref[i:i + win]
-        b = deg[i:i + win]
+        a = ref[i : i + win]
+        b = deg[i : i + win]
         denom = (np.linalg.norm(a) * np.linalg.norm(b)) + 1e-12
         scores.append(float(np.dot(a, b) / denom))
     if not scores:
@@ -76,7 +77,7 @@ def _visqol_like(ref: np.ndarray, deg: np.ndarray, sr: int) -> float:
     R = np.abs(np.fft.rfft(ref[:n_fft] * win)) + 1e-12
     D = np.abs(np.fft.rfft(deg[:n_fft] * win)) + 1e-12
     # NSIM (per-band similarity)
-    nsim = np.mean(2 * R * D / (R ** 2 + D ** 2))
+    nsim = np.mean(2 * R * D / (R**2 + D**2))
     # Map [0, 1] to [1, 5]
     return float(1.0 + 4.0 * np.clip(nsim, 0.0, 1.0))
 
@@ -93,8 +94,8 @@ def _si_sdr(ref: np.ndarray, deg: np.ndarray) -> float:
     alpha = float(np.dot(ref, deg) / (np.dot(ref, ref) + 1e-12))
     target = alpha * ref
     noise = deg - target
-    s_target = float(np.sum(target ** 2)) + 1e-12
-    s_noise = float(np.sum(noise ** 2)) + 1e-12
+    s_target = float(np.sum(target**2)) + 1e-12
+    s_noise = float(np.sum(noise**2)) + 1e-12
     return 10 * np.log10(s_target / s_noise)
 
 
@@ -123,48 +124,54 @@ class RefQualityAnalyzer(AudioAnalyzer):
         ref_sha = params.get("reference_sha256")
 
         if mode == "no-reference" or not ref_path:
-            return [self._finding(
-                check_id="ref_quality.indeterminate",
-                metric="quality_score",
-                value=None,
-                unit="score",
-                status=Status.INDETERMINATE,
-                message=(
-                    "no-reference mode: cannot compute full-reference metric "
-                    "(rule 2: sem referência = sem métrica full-reference)"
-                ),
-                evidence={"mode": mode},
-                extra_limitations=[
-                    "do not interpret indeterminate as pass or fail",
-                ],
-            )]
+            return [
+                self._finding(
+                    check_id="ref_quality.indeterminate",
+                    metric="quality_score",
+                    value=None,
+                    unit="score",
+                    status=Status.INDETERMINATE,
+                    message=(
+                        "no-reference mode: cannot compute full-reference metric "
+                        "(rule 2: sem referência = sem métrica full-reference)"
+                    ),
+                    evidence={"mode": mode},
+                    extra_limitations=[
+                        "do not interpret indeterminate as pass or fail",
+                    ],
+                )
+            ]
 
         # Verify reference hash if declared
         if ref_sha:
             actual_sha = sha256_of_file(ref_path)
             if actual_sha != ref_sha:
-                return [self._finding(
-                    check_id="ref_quality.hash_mismatch",
-                    metric="quality_score",
-                    value=None,
-                    unit="score",
-                    status=Status.ERROR,
-                    message=f"reference hash mismatch: declared {ref_sha[:12]}.. vs actual {actual_sha[:12]}..",
-                    evidence={"declared_sha256": ref_sha, "actual_sha256": actual_sha},
-                )]
+                return [
+                    self._finding(
+                        check_id="ref_quality.hash_mismatch",
+                        metric="quality_score",
+                        value=None,
+                        unit="score",
+                        status=Status.ERROR,
+                        message=f"reference hash mismatch: declared {ref_sha[:12]}.. vs actual {actual_sha[:12]}..",
+                        evidence={"declared_sha256": ref_sha, "actual_sha256": actual_sha},
+                    )
+                ]
 
         try:
             ref_audio = decode(ref_path)
         except Exception as exc:
-            return [self._finding(
-                check_id="ref_quality.decode_error",
-                metric="quality_score",
-                value=None,
-                unit="score",
-                status=Status.ERROR,
-                message=f"could not decode reference: {exc}",
-                evidence={"reference_path": ref_path},
-            )]
+            return [
+                self._finding(
+                    check_id="ref_quality.decode_error",
+                    metric="quality_score",
+                    value=None,
+                    unit="score",
+                    status=Status.ERROR,
+                    message=f"could not decode reference: {exc}",
+                    evidence={"reference_path": ref_path},
+                )
+            ]
 
         ref = ref_audio.mono_mix().astype(np.float64)
         deg = audio.mono_mix().astype(np.float64)
@@ -173,6 +180,7 @@ class RefQualityAnalyzer(AudioAnalyzer):
         resampled = False
         if ref_audio.sample_rate != audio.sample_rate:
             from ..decode import _resample
+
             ref = _resample(ref.reshape(1, -1), ref_audio.sample_rate, audio.sample_rate)[0]
             resampled = True
 
@@ -198,37 +206,41 @@ class RefQualityAnalyzer(AudioAnalyzer):
             status = Status.PASS if score >= min_score else Status.WARNING
             msg = f"SI-SDR {score:.2f} dB (min {min_score})"
         else:
-            return [self._finding(
-                check_id="ref_quality.unknown_mode",
-                metric="quality_score",
-                value=None,
-                unit="score",
-                status=Status.NOT_APPLICABLE,
-                message=f"unknown mode: {mode}",
-                evidence={"mode": mode},
-            )]
+            return [
+                self._finding(
+                    check_id="ref_quality.unknown_mode",
+                    metric="quality_score",
+                    value=None,
+                    unit="score",
+                    status=Status.NOT_APPLICABLE,
+                    message=f"unknown mode: {mode}",
+                    evidence={"mode": mode},
+                )
+            ]
 
         if not np.isfinite(score):
             score = 0.0
             status = Status.INDETERMINATE
             msg = "score was non-finite"
 
-        return [self._finding(
-            check_id=f"ref_quality.{mode}",
-            metric=metric,
-            value=round(float(score), 4),
-            unit=unit,
-            status=status,
-            confidence=0.8,
-            message=msg,
-            evidence={
-                "mode": mode,
-                "reference_sha256": ref_sha or ref_audio.file_sha256,
-                "reference_sample_rate_hz": ref_audio.sample_rate,
-                "resampled": resampled,
-                "min_score": min_score,
-            },
-        )]
+        return [
+            self._finding(
+                check_id=f"ref_quality.{mode}",
+                metric=metric,
+                value=round(float(score), 4),
+                unit=unit,
+                status=status,
+                confidence=0.8,
+                message=msg,
+                evidence={
+                    "mode": mode,
+                    "reference_sha256": ref_sha or ref_audio.file_sha256,
+                    "reference_sample_rate_hz": ref_audio.sample_rate,
+                    "resampled": resampled,
+                    "min_score": min_score,
+                },
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {

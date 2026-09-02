@@ -8,6 +8,7 @@ Key invariants:
   - CT-13: exceptions become ERROR findings, not crashes
   - CT-14: analyzer returns measurement; policy decides final status
 """
+
 from __future__ import annotations
 
 import traceback
@@ -48,16 +49,18 @@ def run_analyzers(
     for aid in selected:
         if aid not in available_ids:
             # Already rejected at profile validation time, but double-check
-            findings.append(Finding(
-                check_id=f"{aid}.missing",
-                analyzer=aid,
-                metric="error",
-                value=None,
-                unit="enum",
-                status=Status.ERROR,
-                message=f"analyzer '{aid}' is not registered",
-                method="engine",
-            ))
+            findings.append(
+                Finding(
+                    check_id=f"{aid}.missing",
+                    analyzer=aid,
+                    metric="error",
+                    value=None,
+                    unit="enum",
+                    status=Status.ERROR,
+                    message=f"analyzer '{aid}' is not registered",
+                    method="engine",
+                )
+            )
             continue
 
         analyzer = registry[aid]
@@ -71,17 +74,19 @@ def run_analyzers(
             continue
 
         if not applicable:
-            findings.append(Finding(
-                check_id=f"{aid}.applicability",
-                analyzer=aid,
-                metric="applicability",
-                value=None,
-                unit="enum",
-                status=Status.NOT_APPLICABLE,
-                method=analyzer.METHOD,
-                message=f"analyzer '{aid}' not applicable to this input",
-                limitations=list(analyzer.DEFAULT_LIMITATIONS),
-            ))
+            findings.append(
+                Finding(
+                    check_id=f"{aid}.applicability",
+                    analyzer=aid,
+                    metric="applicability",
+                    value=None,
+                    unit="enum",
+                    status=Status.NOT_APPLICABLE,
+                    method=analyzer.METHOD,
+                    message=f"analyzer '{aid}' not applicable to this input",
+                    limitations=list(analyzer.DEFAULT_LIMITATIONS),
+                )
+            )
             continue
 
         # CT-13: run analysis, capture exceptions as ERROR

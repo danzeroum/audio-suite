@@ -1,4 +1,5 @@
 """EV-01 to EV-12: Evidence bundle tests."""
+
 from __future__ import annotations
 
 import hashlib
@@ -14,10 +15,10 @@ from audio_suite.models import PCM, Finding, Profile, Status
 @pytest.fixture
 def simple_findings():
     return [
-        Finding(check_id="a", analyzer="loudness", metric="lufs",
-                value=-20.0, unit="LUFS", status=Status.PASS),
-        Finding(check_id="b", analyzer="clipping", metric="pct",
-                value=0.5, unit="%", status=Status.WARNING),
+        Finding(
+            check_id="a", analyzer="loudness", metric="lufs", value=-20.0, unit="LUFS", status=Status.PASS
+        ),
+        Finding(check_id="b", analyzer="clipping", metric="pct", value=0.5, unit="%", status=Status.WARNING),
     ]
 
 
@@ -43,8 +44,7 @@ def test_EV03_bundle_findings_sorted(sine_1k, simple_findings):
 
 def test_EV04_bundle_floats_rounded(sine_1k):
     """All floats in findings must be rounded to 6 decimals for determinism."""
-    f = Finding(check_id="a", analyzer="t", metric="m",
-                value=0.123456789012345, unit="x", status=Status.PASS)
+    f = Finding(check_id="a", analyzer="t", metric="m", value=0.123456789012345, unit="x", status=Status.PASS)
     profile = Profile(name="t", version="1", analyzers={})
     bundle = build_bundle(sine_1k, profile, [f])
     assert bundle.findings[0]["value"] == 0.123457  # 6 decimals
@@ -67,10 +67,8 @@ def test_EV06_bundle_to_json_serializable(sine_1k, simple_findings):
 
 def test_EV07_fingerprint_changes_on_value_change(sine_1k):
     """Tamper detection: changing a finding value must change the fingerprint."""
-    f1 = Finding(check_id="a", analyzer="t", metric="m",
-                 value=1.0, unit="x", status=Status.PASS)
-    f2 = Finding(check_id="a", analyzer="t", metric="m",
-                 value=2.0, unit="x", status=Status.PASS)
+    f1 = Finding(check_id="a", analyzer="t", metric="m", value=1.0, unit="x", status=Status.PASS)
+    f2 = Finding(check_id="a", analyzer="t", metric="m", value=2.0, unit="x", status=Status.PASS)
     profile = Profile(name="t", version="1", analyzers={})
     b1 = build_bundle(sine_1k, profile, [f1])
     b2 = build_bundle(sine_1k, profile, [f2])
@@ -101,10 +99,10 @@ def test_EV10_bundle_unsigned_by_default(sine_1k, simple_findings):
 
 def test_EV11_bundle_signed_when_requested(sine_1k, simple_findings, tmp_path):
     from audio_suite.security.signing import generate_keypair
+
     priv, pub = generate_keypair(tmp_path)
     profile = Profile(name="t", version="1", analyzers={})
-    bundle = build_bundle(sine_1k, profile, simple_findings,
-                          sign=True, signing_key_path=str(priv))
+    bundle = build_bundle(sine_1k, profile, simple_findings, sign=True, signing_key_path=str(priv))
     assert bundle.signature is not None
     assert bundle.signature["signed"] is True
     assert bundle.signature["algorithm"] == "Ed25519"
@@ -115,6 +113,7 @@ def test_EV11_bundle_signed_when_requested(sine_1k, simple_findings, tmp_path):
 def test_EV12_bundle_redactable(sine_1k):
     """PII redaction should remove user paths from subject.source_path."""
     from audio_suite.security.pii import redact_pii
+
     profile = Profile(name="t", version="1", analyzers={})
     bundle = build_bundle(sine_1k, profile, [])
     redacted = redact_pii(bundle.to_dict())

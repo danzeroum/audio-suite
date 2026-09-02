@@ -4,6 +4,7 @@ This is the analyzer backing the `audio-suite inspect` CLI command.
 Output is informational; status is always PASS unless the file is unreadable
 (in which case the decoder raises before this analyzer runs).
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -38,16 +39,18 @@ class InspectAnalyzer(AudioAnalyzer):
             "duration_s": round(audio.duration_s, 4),
             "provenance": audio.provenance,
         }
-        return [self._finding(
-            check_id="inspect.metadata",
-            metric="metadata",
-            value=None,
-            unit="json",
-            status=Status.PASS,
-            confidence=1.0,
-            message="metadata extracted",
-            evidence=info,
-        )]
+        return [
+            self._finding(
+                check_id="inspect.metadata",
+                metric="metadata",
+                value=None,
+                unit="json",
+                status=Status.PASS,
+                confidence=1.0,
+                message="metadata extracted",
+                evidence=info,
+            )
+        ]
 
     def profile_schema(self) -> dict[str, Any]:
         return {"type": "object", "additionalProperties": False}
