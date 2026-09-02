@@ -12,7 +12,20 @@ import yaml
 # Lockfile de profiles (O6)
 # ---------------------------------------------------------------------------
 
-LOCKFILE_PATH = Path("registry/profiles.lock.yaml")
+def _find_repo_root() -> Path:
+    """Encontra raiz do repo procurando por 'registry/profiles.lock.yaml'."""
+    candidates = [
+        Path(__file__).resolve().parents[1],  # source: engine/policy.py → [1] = repo
+        Path.cwd(),
+    ]
+    for cand in candidates:
+        if (cand / "registry" / "profiles.lock.yaml").exists():
+            return cand
+    return Path.cwd()
+
+
+_REPO_ROOT = _find_repo_root()
+LOCKFILE_PATH = _REPO_ROOT / "registry" / "profiles.lock.yaml"
 
 VERSION_SUFFIX_RE = re.compile(r"_v(\d+)$")
 

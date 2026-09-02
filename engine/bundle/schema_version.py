@@ -16,7 +16,29 @@ from typing import Any
 SUPPORTED_BUNDLE_VERSION = "1.0.0"
 SUPPORTED_BUNDLE_URN = f"urn:audio-suite:bundle:v{SUPPORTED_BUNDLE_VERSION}"
 
-SCHEMA_REGISTRY_PATH = Path("contracts/registry.json")
+
+def _find_repo_root() -> Path:
+    """Encontra a raiz do repo procurando por 'contracts/registry.json'.
+
+    Necessário porque instalações editable (.egg-link) podem ter __file__
+    apontando para o diretório site-packages em vez do source tree.
+    """
+    # Tenta path relativo ao arquivo source
+    # engine/bundle/schema_version.py → parents[0]=bundle, [1]=engine, [2]=repo
+    candidates = [
+        Path(__file__).resolve().parents[2],
+        Path(__file__).resolve().parents[3],  # fallback para layouts diferentes
+        Path.cwd(),  # cwd atual
+    ]
+    for cand in candidates:
+        if (cand / "contracts" / "registry.json").exists():
+            return cand
+    # Fallback: usa cwd (vai funcionar se CI roda do repo root)
+    return Path.cwd()
+
+
+_REPO_ROOT = _find_repo_root()
+SCHEMA_REGISTRY_PATH = _REPO_ROOT / "contracts" / "registry.json"
 
 SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
@@ -83,9 +105,13 @@ def load_schema_registry() -> dict[str, Any]:
 
 
 def resolve_schema(urn: str) -> Path | None:
-    """Resolve uma URN para um caminho de schema local (O7)."""
+    """Resolve uma URN para um caminho de schema local (O7).
+
+    Retorna path absoluto baseado na raiz do repo, independente do cwd.
+    """
     registry = load_schema_registry()
     for entry in registry.get("schemas", []):
         if entry.get("urn") == urn:
-            return Path(entry["path"])
+            # entry["path"] é relativo à raiz do repo (ex.: "contracts/audio-run-1.0.json")
+            return _REPO_ROOT / entry["path"]
     return None

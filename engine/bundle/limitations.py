@@ -93,7 +93,7 @@ def validate_limitations_list(limitations: list[str]) -> list[str]:
 
     Levanta ValueError se encontrar limitation desconhecida.
     """
-    unknown = [l for l in limitations if not is_known_limitation(l)]
+    unknown = [lim for lim in limitations if not is_known_limitation(lim)]
     if unknown:
         raise ValueError(f"Limitations desconhecidas: {unknown}")
     return limitations

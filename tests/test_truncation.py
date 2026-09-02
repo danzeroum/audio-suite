@@ -45,14 +45,14 @@ class TestTruncateFindings:
 
     def test_aggregate_severity_warning_when_no_fail(self):
         findings = [make_finding("MD", i, status="warning", severity="warning") for i in range(150)]
-        out, overflow = truncate_findings(findings, max_per_analyzer=100)
+        out, _overflow = truncate_findings(findings, max_per_analyzer=100)
         agg = out[-1]
         assert agg["status"] == "warning"
         assert agg["severity"] == "warning"
 
     def test_aggregate_severity_info_when_all_info(self):
         findings = [make_finding("MD", i, status="info", severity="info") for i in range(150)]
-        out, overflow = truncate_findings(findings, max_per_analyzer=100)
+        out, _overflow = truncate_findings(findings, max_per_analyzer=100)
         agg = out[-1]
         assert agg["status"] == "info"
         assert agg["severity"] == "info"
