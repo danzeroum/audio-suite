@@ -1,5 +1,0 @@
-profiles:
-  - name: broadcast_ebu_r128_v1
-    sha256: TBD_AT_RELEASE
-  - name: speech_pipeline_v1
-    sha256: TBD_AT_RELEASE

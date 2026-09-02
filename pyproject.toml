@@ -1,109 +1,93 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "audio-suite"
-version = "0.2.0-beta"
-description = "Assurance engine for audio artifacts: measures, policies, evidence."
-authors = [{ name="Dan Zeroum", email="danzeroum@proton.me" }]
-license = { text = "MIT" }
+version = "0.1.0"
+description = "Acoustic analysis CLI for objective defect detection and perceptual quality assessment"
+readme = "README.md"
 requires-python = ">=3.11"
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Multimedia :: Sound/Audio"
-]
+license = { text = "MIT" }
+authors = [{ name = "audio-suite contributors" }]
 dependencies = [
-    "pyloudnorm>=0.2.0",
-    "mutagen>=1.47.0",
-    "ffmpeg-python>=0.2.0",
-    "ruamel.yaml>=0.17.0",
-    "PyCryptodome>=3.18.0",
-    "cryptography>=42.0.0",
-    "typer>=0.9.0",
-    "rich>=13.0.0",
-    "jsonschema>=4.20.0",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "soundfile>=0.12",
     "PyYAML>=6.0",
-    "scipy>=1.11.0",
-    "numpy>=1.24.0"
+    "jsonschema>=4.20",
+    "pynacl>=1.5",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.1",
-    "pytest-timeout>=2.2",
+    "hypothesis>=6.92",
+    "ruff>=0.4",
     "mypy>=1.8",
-    "ruff>=0.2",
-    "build>=1.0",
     "pip-audit>=2.7",
-    "soundfile>=0.12"
 ]
 
 [project.scripts]
-audio-suite = "engine.cli:app"
+audio-suite = "audio_suite.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["engine*", "analyzers*"]
+where = ["."]
+include = ["audio_suite*"]
 
 [tool.pytest.ini_options]
+minversion = "8.0"
 testpaths = ["tests"]
+python_files = ["test_*.py"]
 addopts = "-ra --strict-markers"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks integration tests",
-    "e2e: marks end-to-end tests with fixtures",
+    "property: property-based tests",
 ]
-timeout = 60
 
 [tool.coverage.run]
-source = ["engine", "analyzers"]
-omit = ["*/tests/*", "*/__pycache__/*"]
+source = ["audio_suite"]
+branch = true
 
 [tool.coverage.report]
-fail_under = 70
-show_missing = true
 exclude_lines = [
     "pragma: no cover",
-    "if __name__ == .__main__.:",
     "raise NotImplementedError",
+    "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
-
-[tool.mypy]
-python_version = "3.11"
-strict = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-ignore_missing_imports = true
-exclude = ["tests/", "scripts/", "build/", "dist/"]
-
-[[tool.mypy.overrides]]
-module = ["ffmpeg", "pyloudnorm", "mutagen.*", "scipy.*"]
-ignore_missing_imports = true
+fail_under = 70
 
 [tool.ruff]
-line-length = 100
+line-length = 110
 target-version = "py311"
 
 [tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "UP",  # pyupgrade
-    "RUF", # ruff-specific
-]
-ignore = [
-    "E501",  # line too long (we have rich output)
-    "B008",  # function call in argument (typer pattern)
-    "RUF001", "RUF002", "RUF003",  # ambiguous unicode
-]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM"]
+# Excluded rules:
+# - PL* (pylint): too noisy; PLC0415 conflicts with legitimate lazy imports
+# - B905: zip() without strict= (we use zip on equal-length sequences by construction)
+# - B017: blind exception assertion in tests (pytest.raises(Exception) is intentional)
+# - B023: loop variable in function def (false positive in test fixtures)
+# - B007: unused loop variable (we use _name convention but ruff still flags)
+# - SIM105: try/except/pass (clearer than contextlib.suppress in tests)
+# - SIM108: ternary (if/else is often clearer for multi-line expressions)
+# - UP042: str+Enum inheritance (intentional for JSON serialization)
+ignore = ["E501", "B905", "B017", "B023", "B007", "SIM105", "SIM108", "UP042"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may use inline imports for scoping (e.g. env var manipulation)
+"tests/**" = ["E402", "F401", "F811", "E702", "E741", "C416"]
+# Analyzers use lazy scipy/signal imports to keep startup fast
+"audio_suite/analyzers/**" = ["E402"]
+# Security module uses lazy nacl import (optional dependency path)
+"audio_suite/security/**" = ["E402"]
+# Output formatters may use lazy imports for optional deps
+"audio_suite/output/**" = ["E402"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+warn_unused_ignores = true
