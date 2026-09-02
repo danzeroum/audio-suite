@@ -16,7 +16,6 @@ from audio_suite.cli import main as cli_main
 from audio_suite.models import ExitCode
 from audio_suite.policy import load_profile, validate_profile
 
-
 ROOT = Path(__file__).resolve().parents[2]
 FIX = ROOT / "tests" / "fixtures" / "generated"
 PYTHON = sys.executable

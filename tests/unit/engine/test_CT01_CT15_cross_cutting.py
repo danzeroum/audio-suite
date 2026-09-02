@@ -9,8 +9,7 @@ import pytest
 
 from audio_suite.analyzers import all_analyzers
 from audio_suite.engine import run_analyzers
-from audio_suite.models import Finding, PCM, Profile, Status
-
+from audio_suite.models import PCM, Finding, Profile, Status
 
 SR = 44100
 
@@ -26,7 +25,7 @@ def make_pcm(n_seconds: float = 1.0, channels: int = 1, sr: int = SR, freq: floa
 # CT-01: every analyzer is registered with ID, version, name, method, schema
 def test_CT01_registration_metadata():
     for aid, a in all_analyzers().items():
-        assert a.ID == aid
+        assert aid == a.ID
         assert a.NAME and a.VERSION and a.METHOD
         assert isinstance(a.profile_schema(), dict)
 
@@ -166,8 +165,8 @@ def test_CT12_limitations_present():
 # CT-13: exceptions become ERROR findings
 def test_CT13_exceptions_become_error():
     """An analyzer that raises must produce an ERROR finding, not a crash."""
-    from audio_suite.analyzers.base import AudioAnalyzer
     from audio_suite.analyzers import _REGISTRY
+    from audio_suite.analyzers.base import AudioAnalyzer
 
     class BoomAnalyzer(AudioAnalyzer):
         ID = "boom_test"
@@ -195,8 +194,8 @@ def test_CT13_exceptions_become_error():
 def test_CT14_policy_separation(sine_1k):
     """The clipping analyzer returns FAIL when threshold is exceeded;
     the strict_overlay can escalate WARNING -> FAIL but not the reverse."""
-    from audio_suite.policy import apply_policy
     from audio_suite.models import Finding
+    from audio_suite.policy import apply_policy
     # A WARNING finding
     f = Finding(
         check_id="x", analyzer="clipping", metric="clipped_sample_pct",

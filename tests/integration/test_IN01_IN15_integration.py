@@ -11,7 +11,6 @@ import pytest
 from audio_suite.cli import main as cli_main
 from audio_suite.models import ExitCode
 
-
 ROOT = Path(__file__).resolve().parents[2]
 FIX = ROOT / "tests" / "fixtures" / "generated"
 PYTHON = sys.executable

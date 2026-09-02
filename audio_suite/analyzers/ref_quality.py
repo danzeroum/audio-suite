@@ -112,8 +112,7 @@ class RefQualityAnalyzer(AudioAnalyzer):
     ]
 
     def applicable(self, audio: PCM, profile: Profile) -> bool:
-        params = profile.analyzer_params(self.ID)
-        # Applicable if either mode is set, OR if no mode at all (returns indeterminate).
+        # Applicable in all cases — no-reference mode returns indeterminate.
         return True
 
     def analyze(self, audio: PCM, params: dict[str, Any]) -> list:

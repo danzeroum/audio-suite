@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from audio_suite.bundle import build_bundle, bundle_to_json, measurement_fingerprint
-from audio_suite.models import Finding, PCM, Profile, Status
+from audio_suite.models import PCM, Finding, Profile, Status
 
 
 @pytest.fixture

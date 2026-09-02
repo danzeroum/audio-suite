@@ -5,12 +5,13 @@ import hashlib
 
 import numpy as np
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
 
+from audio_suite.bundle import measurement_fingerprint
 from audio_suite.decode import sha256_of_file
 from audio_suite.models import PCM, Status, aggregate_status, status_rank
-from audio_suite.bundle import measurement_fingerprint
 
 
 # Property 1: Normalizing twice the same PCM doesn't change its identity

@@ -17,10 +17,10 @@ import pytest
 from audio_suite import __version__
 from audio_suite.analyzers import all_analyzers, analyzer_ids
 from audio_suite.models import (
+    PCM,
     STATUS_PRECEDENCE,
     Bundle,
     Finding,
-    PCM,
     Status,
     aggregate_status,
 )
@@ -30,7 +30,7 @@ from audio_suite.policy import validate_profile
 # T-01: every analyzer has stable ID, version, name, method, schema
 def test_T01_analyzer_metadata_complete():
     for aid, analyzer in all_analyzers().items():
-        assert analyzer.ID == aid, f"{aid} ID mismatch"
+        assert aid == analyzer.ID, f"{aid} ID mismatch"
         assert analyzer.NAME, f"{aid} has empty NAME"
         assert analyzer.VERSION, f"{aid} has empty VERSION"
         assert analyzer.METHOD, f"{aid} has empty METHOD"

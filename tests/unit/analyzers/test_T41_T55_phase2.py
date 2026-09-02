@@ -155,6 +155,7 @@ def test_ref_quality_with_reference(sine_1k):
     """Self-reference should give a near-perfect score."""
     a = all_analyzers()["ref_quality"]
     import tempfile
+
     import soundfile as sf
     # Write a copy of sine_1k as the reference
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:

@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
+from audio_suite.security.pii import redact_pii
 from audio_suite.security.signing import (
     generate_keypair,
     sign_payload,
     verify_payload,
 )
-from audio_suite.security.pii import redact_pii
 
 
 def test_SG01_generate_keypair(tmp_path):
@@ -56,6 +56,7 @@ def test_SG05_env_var_key():
     """Signing key can be provided via AUDIO_SUITE_SIGNING_KEY env var."""
     import base64
     import os
+
     from nacl.signing import SigningKey
     sk = SigningKey.generate()
     env_value = base64.b64encode(bytes(sk)).decode("ascii")

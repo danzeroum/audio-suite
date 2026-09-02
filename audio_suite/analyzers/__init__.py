@@ -5,8 +5,6 @@ External analyzers can be registered via the CARTRIDGE_API (Fase 5).
 """
 from __future__ import annotations
 
-from typing import Dict, Type
-
 from .base import AudioAnalyzer
 
 _REGISTRY: dict[str, AudioAnalyzer] = {}
