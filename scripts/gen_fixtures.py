@@ -28,7 +28,14 @@ def _save(path: Path, samples: np.ndarray, sr: int = SR, subtype: str = "PCM_16"
     path.parent.mkdir(parents=True, exist_ok=True)
     # soundfile expects (frames, channels)
     data = samples.T if samples.ndim == 2 else samples.reshape(-1, 1)
-    sf.write(str(path), data, sr, subtype=subtype)
+    # Determine format from extension to avoid soundfile inference issues on CI
+    ext = path.suffix.lower()
+    fmt_map = {".wav": "WAV", ".flac": "FLAC", ".mp3": "MP3", ".ogg": "OGG", ".aiff": "AIFF", ".aif": "AIFF"}
+    fmt = fmt_map.get(ext)
+    if fmt:
+        sf.write(str(path), data, sr, subtype=subtype, format=fmt)
+    else:
+        sf.write(str(path), data, sr, subtype=subtype)
     with open(path, "rb") as f:
         sha = hashlib.sha256(f.read()).hexdigest()
     return sha
