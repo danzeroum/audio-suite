@@ -275,9 +275,141 @@ def main() -> None:
         "channels": 0,
     }
 
+    # Extended corpus (CORP-03)
+    for name, samples, subtype, purpose in get_extended_fixtures():
+        path = FIXTURE_DIR / name
+        sha = _save(path, samples, subtype=subtype)
+        manifest[name] = {
+            "sha256": sha,
+            "purpose": purpose,
+            "subtype": subtype,
+            "sample_rate": SR,
+            "channels": 2 if samples.ndim == 2 else 1,
+        }
+
     MANIFEST_PATH.write_text(json.dumps(manifest, indent=2, sort_keys=True))
     print(f"Generated {len(manifest)} fixtures in {FIXTURE_DIR}")
     print(f"Manifest: {MANIFEST_PATH}")
+
+
+    main()
+
+
+# === Additional generators for expanded corpus (CORP-03) ===
+
+def gen_dc_offset(sr=SR, dur_s=DURATION_S, offset=0.1):
+    """Signal with DC offset."""
+    t = np.arange(int(sr * dur_s)) / sr
+    x = 0.3 * np.sin(2 * np.pi * 440 * t) + offset
+    return x.astype(np.float32)
+
+def gen_stereo_wide(sr=SR, dur_s=DURATION_S):
+    """Stereo with wide image (L and R are different frequencies)."""
+    t = np.arange(int(sr * dur_s)) / sr
+    L = 0.3 * np.sin(2 * np.pi * 440 * t)
+    R = 0.3 * np.sin(2 * np.pi * 554 * t)  # C#5
+    return np.stack([L.astype(np.float32), R.astype(np.float32)])
+
+def gen_dual_mono(sr=SR, dur_s=DURATION_S):
+    """Dual mono (L == R exactly)."""
+    t = np.arange(int(sr * dur_s)) / sr
+    x = 0.3 * np.sin(2 * np.pi * 440 * t).astype(np.float32)
+    return np.stack([x, x])
+
+def gen_sine_amped(sr=SR, dur_s=DURATION_S, freq=440, amp=0.8):
+    """High-amplitude sine (near clipping)."""
+    return gen_sine(freq, sr, dur_s, amp=amp, channels=1)
+
+def gen_low_snr(sr=SR, dur_s=DURATION_S):
+    """Signal with low SNR (lots of noise)."""
+    rng = np.random.default_rng(123)
+    t = np.arange(int(sr * dur_s)) / sr
+    signal = 0.05 * np.sin(2 * np.pi * 1000 * t)
+    noise = 0.3 * rng.standard_normal(len(t))
+    return (signal + noise).astype(np.float32)
+
+def gen_freq_sweep(sr=SR, dur_s=DURATION_S, f0=100, f1=8000):
+    """Logarithmic frequency sweep."""
+    t = np.arange(int(sr * dur_s)) / sr
+    freq = f0 * (f1 / f0) ** (t / dur_s)
+    phase = 2 * np.pi * np.cumsum(freq) / sr
+    return (0.3 * np.sin(phase)).astype(np.float32)
+
+def gen_interleaved_noise(sr=SR, dur_s=DURATION_S):
+    """Signal with periodic noise bursts (tests glitch robustness)."""
+    t = np.arange(int(sr * dur_s)) / sr
+    x = 0.3 * np.sin(2 * np.pi * 440 * t)
+    # Add noise bursts every 0.5s
+    for i in range(0, int(dur_s * 2)):
+        start = int(i * sr * 0.5)
+        end = start + int(sr * 0.01)
+        if end < len(x):
+            x[start:end] += 0.5 * np.random.default_rng(i).standard_normal(end - start)
+    return x.astype(np.float32)
+
+def gen_polarity_inverted(sr=SR, dur_s=DURATION_S):
+    """Mono signal with polarity inversion at midpoint."""
+    t = np.arange(int(sr * dur_s)) / sr
+    x = 0.3 * np.sin(2 * np.pi * 440 * t)
+    mid = len(x) // 2
+    x[mid:] = -x[mid:]
+    return x.astype(np.float32)
+
+def gen_short_1s(sr=SR):
+    """Very short signal (1 second)."""
+    return gen_sine(440, sr, 1.0, channels=1)
+
+def gen_very_long_30s(sr=SR):
+    """Longer signal (30 seconds) for performance testing."""
+    return gen_sine(440, sr, 30.0, channels=1)
+
+def gen_two_tone(sr=SR, dur_s=DURATION_S):
+    """Two-tone signal (440 + 880 Hz)."""
+    t = np.arange(int(sr * dur_s)) / sr
+    x = 0.2 * np.sin(2 * np.pi * 440 * t) + 0.2 * np.sin(2 * np.pi * 880 * t)
+    return x.astype(np.float32)
+
+def gen_modulated_am(sr=SR, dur_s=DURATION_S):
+    """AM-modulated signal."""
+    t = np.arange(int(sr * dur_s)) / sr
+    carrier = 0.3 * np.sin(2 * np.pi * 1000 * t)
+    am = 0.5 * (1 + np.sin(2 * np.pi * 5 * t))
+    return (carrier * am).astype(np.float32)
+
+def gen_flac_compatible(sr=SR, dur_s=DURATION_S):
+    """Signal suitable for FLAC encoding tests."""
+    return gen_sine(440, sr, dur_s, channels=1)
+
+def gen_violin_like(sr=SR, dur_s=DURATION_S):
+    """Signal with harmonics resembling a violin."""
+    t = np.arange(int(sr * dur_s)) / sr
+    f = 440
+    x = (0.3 * np.sin(2*np.pi*f*t) + 0.15*np.sin(2*np.pi*2*f*t) +
+         0.1*np.sin(2*np.pi*3*f*t) + 0.05*np.sin(2*np.pi*4*f*t))
+    # Add slight vibrato
+    vibrato = 0.02 * np.sin(2 * np.pi * 5 * t)
+    return (x * (1 + vibrato)).astype(np.float32)
+
+
+# === Extended fixtures list ===
+def get_extended_fixtures():
+    return [
+        ("dc_offset.wav", gen_dc_offset(), "PCM_16", "signal with DC offset"),
+        ("stereo_wide.wav", gen_stereo_wide(), "PCM_16", "wide stereo (different freqs L/R)"),
+        ("dual_mono.wav", gen_dual_mono(), "PCM_16", "dual mono (L==R)"),
+        ("sine_amped.wav", gen_sine_amped(), "PCM_16", "high-amplitude sine near clipping"),
+        ("low_snr.wav", gen_low_snr(), "PCM_16", "low SNR signal (heavy noise)"),
+        ("freq_sweep.wav", gen_freq_sweep(), "PCM_16", "log frequency sweep 100-8000 Hz"),
+        ("interleaved_noise.wav", gen_interleaved_noise(), "PCM_16", "periodic noise bursts"),
+        ("polarity_inverted.wav", gen_polarity_inverted(), "PCM_16", "polarity flip at midpoint"),
+        ("short_1s.wav", gen_short_1s(), "PCM_16", "1-second signal (edge case)"),
+        ("long_30s.wav", gen_very_long_30s(), "PCM_16", "30-second signal (performance)"),
+        ("two_tone.wav", gen_two_tone(), "PCM_16", "440+880 Hz two-tone"),
+        ("am_modulated.wav", gen_modulated_am(), "PCM_16", "AM-modulated 1 kHz at 5 Hz"),
+        ("violin_like.wav", gen_violin_like(), "PCM_16", "harmonic signal resembling violin"),
+        ("sine_220.wav", gen_sine(220), "PCM_16", "220 Hz tone (low)"),
+        ("sine_8k.wav", gen_sine(8000), "PCM_16", "8 kHz tone (high)"),
+    ]
 
 
 if __name__ == "__main__":

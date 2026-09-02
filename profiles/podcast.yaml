@@ -1,0 +1,40 @@
+name: podcast
+version: "1.0.0"
+data_classification: internal
+
+analyzers:
+  inspect: {}
+  loudness:
+    min_lufs: -17.0
+    max_lufs: -15.0
+  true_peak:
+    max_dbtp: -1.0
+  clipping:
+    threshold: 0.99
+    max_clipped_pct: 0.01
+  glitch: {}
+  mono_compat:
+    max_loss_db: 6.0
+  channel_balance: {}
+  spectral_health: {}
+  lra: {}
+  codec_conf: {}
+  resampling: {}
+  transient: {}
+  voice_artifacts: {}
+  speech_intelligibility:
+    min_score: 0.5
+  speech_rate:
+    max_syllables_per_sec: 7.0
+  ref_quality:
+    mode: no-reference
+
+retention_policy:
+  bundle_ttl_days: 90
+  redact_pii: true
+
+strict_overlay:
+  clipping:
+    clipped_sample_pct: fail
+  true_peak:
+    true_peak: fail

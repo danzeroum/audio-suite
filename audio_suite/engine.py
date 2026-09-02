@@ -89,18 +89,50 @@ def run_analyzers(
             )
             continue
 
-        # CT-13: run analysis, capture exceptions as ERROR
-        try:
-            raw_findings = analyzer.analyze(audio, params)
-        except Exception as exc:
-            findings.append(_error_finding(aid, "analyze()", exc))
-            continue
+        # CT-13: run analysis with timeout (ENG-01), capture exceptions as ERROR
+        timeout_s = params.get("_timeout_s", 60.0) if isinstance(params, dict) else 60.0
+        raw_findings = _run_with_timeout(analyzer, audio, params, timeout_s, aid, findings)
 
         # CT-14: apply policy (escalation)
         for f in raw_findings:
             findings.append(apply_policy(f, profile))
 
     return findings
+
+
+def _run_with_timeout(analyzer, audio, params, timeout_s, aid, findings):
+    """Run analyzer.analyze with a timeout. On timeout, append ERROR finding (ENG-01)."""
+    import signal
+
+    def _timeout_handler(signum, frame):
+        raise TimeoutError(f"analyzer '{aid}' exceeded {timeout_s}s timeout")
+
+    old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.setitimer(signal.ITIMER_REAL, float(timeout_s))
+    try:
+        result = analyzer.analyze(audio, params)
+    except TimeoutError as exc:
+        findings.append(
+            Finding(
+                check_id=f"{aid}.timeout",
+                analyzer=aid,
+                metric="error",
+                value=None,
+                unit="enum",
+                status=Status.ERROR,
+                method=f"engine::timeout({timeout_s}s)",
+                message=str(exc),
+                limitations=["analyzer timed out; result is unreliable"],
+            )
+        )
+        return []
+    except Exception as exc:
+        findings.append(_error_finding(aid, "analyze()", exc))
+        return []
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, old_handler)
+    return result
 
 
 def _error_finding(analyzer_id: str, where: str, exc: Exception) -> Finding:

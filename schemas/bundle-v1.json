@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audio-suite.dev/schemas/bundle-v1.json",
+  "title": "audio-suite Evidence Bundle v1",
+  "description": "Signed evidence bundle produced by audio-suite analysis",
+  "type": "object",
+  "required": ["schema_version", "tool", "subject", "profile", "findings", "aggregate_status", "measurement_fingerprint"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for backward compatibility"
+    },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version", "schema_version"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "schema_version": {"type": "string"}
+      }
+    },
+    "subject": {
+      "type": "object",
+      "required": ["file_sha256", "sample_rate_hz", "channels", "frames", "duration_s"],
+      "properties": {
+        "source_path": {"type": "string"},
+        "file_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "sample_rate_hz": {"type": "integer", "minimum": 1},
+        "channels": {"type": "integer", "minimum": 1},
+        "channel_layout": {"type": "string"},
+        "frames": {"type": "integer", "minimum": 0},
+        "duration_s": {"type": "number", "minimum": 0}
+      }
+    },
+    "profile": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "data_classification": {"type": "string"},
+        "retention_policy": {"type": "object"},
+        "strict": {"type": "boolean"},
+        "analyzers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check_id", "analyzer", "metric", "status"],
+        "properties": {
+          "check_id": {"type": "string"},
+          "analyzer": {"type": "string"},
+          "metric": {"type": "string"},
+          "value": {"type": ["number", "null"]},
+          "unit": {"type": "string"},
+          "status": {
+            "type": "string",
+            "enum": ["pass", "warning", "fail", "not_applicable", "indeterminate", "needs_review", "error"]
+          },
+          "time_range_ms": {
+            "type": ["array", "null"],
+            "items": {"type": "number"},
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "method": {"type": "string"},
+          "limitations": {"type": "array", "items": {"type": "string"}},
+          "message": {"type": "string"},
+          "evidence": {"type": "object"},
+          "rule_id": {"type": "string", "description": "Stable rule ID like AS-LOUD-001"},
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "error", "critical"],
+            "description": "Severity taxonomy (CONTR-03)"
+          },
+          "recommendation": {"type": "string", "description": "Remediation guidance (CONTR-04)"},
+          "why_it_matters": {"type": "string"},
+          "method_version": {"type": "string"},
+          "requires_human_review": {"type": "boolean"}
+        }
+      }
+    },
+    "aggregate_status": {
+      "type": "string",
+      "enum": ["pass", "warning", "fail", "not_applicable", "indeterminate", "needs_review", "error"]
+    },
+    "measurement_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of canonical findings JSON"
+    },
+    "signature": {
+      "type": ["object", "null"],
+      "properties": {
+        "algorithm": {"type": "string"},
+        "public_key": {"type": "string"},
+        "signature": {"type": "string"},
+        "signed": {"type": "boolean"}
+      }
+    }
+  }
+}

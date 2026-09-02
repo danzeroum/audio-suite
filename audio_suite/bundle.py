@@ -27,6 +27,21 @@ def _canonicalize_findings(findings: list[Finding]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for f in sorted(findings, key=sort_key):
         d = f.to_dict()
+        # Enrich with stable rule_id (CONTR-02)
+        from .rule_ids import get_rule_id, get_severity
+
+        rule_id = get_rule_id(f.analyzer, f.metric)
+        if rule_id:
+            d["rule_id"] = rule_id
+        # Enrich with severity (CONTR-03)
+        d["severity"] = get_severity(f.status.value)
+        # Enrich with remediation for error/critical (CONTR-04)
+        if d["severity"] in ("error", "critical"):
+            d.setdefault("recommendation", _get_recommendation(f))
+            d.setdefault("why_it_matters", _get_why_it_matters(f))
+        # Enrich with uncertainty for probabilistic (CONTR-05)
+        if f.confidence is not None and f.confidence < 0.9:
+            d["requires_human_review"] = f.status.value in ("needs_review", "indeterminate")
         # Round floats for determinism
         for k, v in list(d.items()):
             if isinstance(v, float):
@@ -37,6 +52,44 @@ def _canonicalize_findings(findings: list[Finding]) -> list[dict[str, Any]]:
                 d[k] = [_round_floats(x) if isinstance(x, dict) else x for x in v]
         out.append(d)
     return out
+
+
+_REMEDIATION_TEMPLATES: dict[str, tuple[str, str]] = {
+    "clipping": (
+        "Reduce input gain before the ADC or apply a brickwall limiter at -1 dBTP.",
+        "Clipping introduces irreversible harmonic distortion.",
+    ),
+    "glitch": (
+        "Re-export from the source project, checking for buffer underruns.",
+        "Digital glitches indicate transport or processing errors.",
+    ),
+    "true_peak": (
+        "Apply a true-peak limiter with ceiling at -1.0 dBTP.",
+        "Inter-sample peaks above -1 dBTP can cause DAC clipping.",
+    ),
+    "mono_compat": (
+        "Check for phase issues. Use a correlation meter and fix polarity.",
+        "Mono compatibility loss degrades mono playback systems.",
+    ),
+    "channel_balance": (
+        "Verify channel routing and gain staging. Re-pan or adjust gains.",
+        "Channel imbalance sounds off-center on stereo playback.",
+    ),
+    "loop": (
+        "Apply a crossfade at the loop boundary or align to zero crossing.",
+        "Loop discontinuity causes audible clicks at the loop boundary.",
+    ),
+}
+
+
+def _get_recommendation(f: Finding) -> str:
+    t = _REMEDIATION_TEMPLATES.get(f.analyzer)
+    return t[0] if t else f"Review the {f.analyzer} finding and consult documentation."
+
+
+def _get_why_it_matters(f: Finding) -> str:
+    t = _REMEDIATION_TEMPLATES.get(f.analyzer)
+    return t[1] if t else f"The {f.analyzer} analyzer detected a potential quality issue."
 
 
 def _round_floats(d: dict[str, Any]) -> dict[str, Any]:
