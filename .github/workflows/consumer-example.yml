@@ -1,0 +1,60 @@
+name: Consumer Example — demonstrates audio-suite Action usage
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [example]
+
+permissions:
+  contents: read
+  security-events: write  # required for SARIF upload (A9 — may not work in all contexts)
+
+jobs:
+  validate-audio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install audio-suite
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Generate fixtures
+        run: python scripts/generate_fixtures.py
+
+      - name: Run audio-suite validate
+        run: |
+          python -m engine.cli validate fixture-output/clipping.wav \
+            --profile registry/policy-profiles/broadcast_ebu_r128_v1.yaml \
+            --output bundle.json \
+            --format sarif \
+            --signature-mode unsigned
+          # Exit code: 0=pass, 1=fail, 2=indeterminate, 3=error
+          # For demo we accept fail (expected for clipping fixture)
+          exit 0
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: audio-suite-bundle
+          path: |
+            bundle.json
+            bundle.sarif
+          retention-days: 30
+
+      - name: Upload SARIF to Code Scanning
+        if: always() && hashFiles('bundle.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bundle.sarif
+          category: audio-suite
+        # A9: This step may be skipped on forks, branches without permissions,
+        # or non-security-events-enabled repos. JSON bundle remains the
+        # authoritative contract.
