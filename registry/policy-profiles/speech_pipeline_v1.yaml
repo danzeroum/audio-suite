@@ -1,7 +1,0 @@
-name: speech_pipeline_v1
-owner: audio-suite/community
-reference: "ITU-T P.862 (PESQ) / P.863 (POLQA) — referência opcional"
-description: "Profile para pipelines de fala (ASR/TTS). Métricas de inteligibilidade adiadas."
-
-checks: []
-# Adiar: PESQ, POLQA, ViSQOL — requer decisão sobre licenciamento e implementação

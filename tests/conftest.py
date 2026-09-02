@@ -1,82 +1,95 @@
-"""Tests shared utilities — fixtures de áudio sintético."""
+"""Shared pytest fixtures and helpers."""
 from __future__ import annotations
 
-import hashlib
+import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
+# Ensure the package is importable when running from the repo root
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 
-@pytest.fixture
-def tmp_wav_factory(tmp_path: Path):
-    """Factory para criar WAVs sintéticos em tmp_path."""
+from audio_suite.decode import decode
+from audio_suite.models import PCM
 
-    def _make(name: str, pcm: np.ndarray, sr: int = 48000) -> Path:
-        path = tmp_path / name
-        if pcm.dtype != np.float32:
-            pcm = pcm.astype(np.float32)
-        pcm = np.clip(pcm, -1.0, 1.0)
-        pcm_i16 = (pcm * 32767).astype(np.int16)
-        if pcm_i16.ndim == 1:
-            pcm_i16 = pcm_i16.reshape(-1, 1)
-        import scipy.io.wavfile as wavfile
-        wavfile.write(str(path), sr, pcm_i16)
-        return path
+FIXTURES = ROOT / "tests" / "fixtures" / "generated"
 
-    return _make
+
+def fixture_path(name: str) -> Path:
+    return FIXTURES / name
+
+
+def load_fixture(name: str) -> PCM:
+    return decode(fixture_path(name))
 
 
 @pytest.fixture
-def clean_stereo_pcm():
-    """3s de senoide estéreo limpa em ~-20 dBFS."""
-    sr = 48000
-    t = np.linspace(0, 3.0, int(3.0 * sr), endpoint=False)
-    left = 0.1 * np.sin(2 * np.pi * 440 * t)
-    right = 0.1 * np.sin(2 * np.pi * 440 * t + np.pi / 6)
-    return np.stack([left, right], axis=1).astype(np.float32), sr
+def sine_1k() -> PCM:
+    return load_fixture("sine_1k_mono.wav")
 
 
 @pytest.fixture
-def clipped_pcm():
-    """Senoide saturada (clipping)."""
-    sr = 48000
-    t = np.linspace(0, 1.0, sr, endpoint=False)
-    left = 1.5 * np.sin(2 * np.pi * 440 * t)
-    right = 1.5 * np.sin(2 * np.pi * 440 * t + np.pi / 4)
-    pcm = np.stack([left, right], axis=1).astype(np.float32)
-    return np.clip(pcm, -1.0, 1.0), sr
+def sine_1k_stereo() -> PCM:
+    return load_fixture("sine_1k_stereo.wav")
 
 
 @pytest.fixture
-def inverted_polarity_pcm():
-    """Estéreo com canal direito invertido."""
-    sr = 48000
-    t = np.linspace(0, 3.0, int(3.0 * sr), endpoint=False)
-    left = 0.2 * np.sin(2 * np.pi * 440 * t)
-    right = -left
-    return np.stack([left, right], axis=1).astype(np.float32), sr
+def silence() -> PCM:
+    return load_fixture("silence.wav")
 
 
 @pytest.fixture
-def mono_pcm():
-    """Mono."""
-    sr = 48000
-    t = np.linspace(0, 1.0, sr, endpoint=False)
-    sig = 0.1 * np.sin(2 * np.pi * 440 * t)
-    return sig.reshape(-1, 1).astype(np.float32), sr
+def clipped() -> PCM:
+    return load_fixture("clipped.wav")
 
 
 @pytest.fixture
-def silence_pcm():
-    """5s de silêncio."""
-    sr = 48000
-    return np.zeros((int(5.0 * sr), 2), dtype=np.float32), sr
+def click_500ms() -> PCM:
+    return load_fixture("click_500ms.wav")
 
 
-def file_sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            h.update(chunk)
-    return h.hexdigest()
+@pytest.fixture
+def dropout_50ms() -> PCM:
+    return load_fixture("dropout_50ms.wav")
+
+
+@pytest.fixture
+def phase_inverted() -> PCM:
+    return load_fixture("phase_inverted.wav")
+
+
+@pytest.fixture
+def louder_left() -> PCM:
+    return load_fixture("louder_left.wav")
+
+
+@pytest.fixture
+def loop_clean() -> PCM:
+    return load_fixture("loop_clean.wav")
+
+
+@pytest.fixture
+def loop_disc() -> PCM:
+    return load_fixture("loop_discontinuous.wav")
+
+
+@pytest.fixture
+def white_noise() -> PCM:
+    return load_fixture("white_noise.wav")
+
+
+@pytest.fixture
+def pink_noise() -> PCM:
+    return load_fixture("pink_noise.wav")
+
+
+@pytest.fixture
+def speech_like() -> PCM:
+    return load_fixture("speech_like.wav")
+
+
+@pytest.fixture
+def aliasing() -> PCM:
+    return load_fixture("aliasing.wav")

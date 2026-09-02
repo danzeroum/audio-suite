@@ -1,0 +1,163 @@
+{
+  "aliasing.wav": {
+    "channels": 1,
+    "purpose": "19 kHz content may alias on bad resampling",
+    "sample_rate": 44100,
+    "sha256": "af76a98afba6a80a953e06d730839fc3cf8f3f3b78bf35ac67fb14f254c687f1",
+    "subtype": "PCM_16"
+  },
+  "audio.txt": {
+    "channels": 0,
+    "purpose": "non-audio extension (should fail decode)",
+    "sample_rate": 0,
+    "sha256": "e23b51a40d21aad70200ec1f08c6e4883d6ca40c22b6ffbdff306c9c62c408e4",
+    "subtype": ""
+  },
+  "click_500ms.wav": {
+    "channels": 1,
+    "purpose": "single-sample click at 500ms",
+    "sample_rate": 44100,
+    "sha256": "97a60dac025c9ab0305c4bf3d9e500c4466eb329b756abf1957f30718eaca6b0",
+    "subtype": "PCM_16"
+  },
+  "clipped.wav": {
+    "channels": 1,
+    "purpose": "hard-clipped sine",
+    "sample_rate": 44100,
+    "sha256": "4a51f6b74b26a7be781a3039d95990a2252b0ce9cd28bccd9353467015a9d641",
+    "subtype": "PCM_16"
+  },
+  "dropout_100ms.wav": {
+    "channels": 1,
+    "purpose": "100ms dropout at 800ms",
+    "sample_rate": 44100,
+    "sha256": "0e36a52e451f12cc3f786b1dde5d87f646c0d747b7328124c5ae59519ec2cbcb",
+    "subtype": "PCM_16"
+  },
+  "dropout_50ms.wav": {
+    "channels": 1,
+    "purpose": "50ms dropout at 800ms",
+    "sample_rate": 44100,
+    "sha256": "7199c8af9cad7de61341e6646462e2f9b5362b67522cdf82890a71a8d04337d2",
+    "subtype": "PCM_16"
+  },
+  "empty.wav": {
+    "channels": 0,
+    "purpose": "empty file (should fail decode)",
+    "sample_rate": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "subtype": ""
+  },
+  "high_bw_96k.wav": {
+    "channels": 1,
+    "purpose": "96 kHz with 40 kHz content",
+    "sample_rate": 96000,
+    "sha256": "b784482eb9cf2322a7b25de2b05fab35fae28611d17b950803a3318ecee7195d",
+    "subtype": "PCM_16"
+  },
+  "loop_clean.wav": {
+    "channels": 1,
+    "purpose": "loop wraps cleanly",
+    "sample_rate": 44100,
+    "sha256": "26ef0689122a13dd10a1cd3ce8b31e0f99eae9ac96f6bcb8ee38804588be9c46",
+    "subtype": "PCM_16"
+  },
+  "loop_discontinuous.wav": {
+    "channels": 1,
+    "purpose": "loop has DC jump",
+    "sample_rate": 44100,
+    "sha256": "761b9743aaa6451cb103ff5cfc7c3944e2f574d63ca5fdd01fdbc0c748752f6d",
+    "subtype": "PCM_16"
+  },
+  "louder_left.wav": {
+    "channels": 2,
+    "purpose": "L louder than R by ~14 dB",
+    "sample_rate": 44100,
+    "sha256": "45e0f72c9bc9dc315397d8e432fc74274590340b63be11803b5787ce59d1111b",
+    "subtype": "PCM_16"
+  },
+  "phase_inverted.wav": {
+    "channels": 2,
+    "purpose": "L=-R will cancel in mono",
+    "sample_rate": 44100,
+    "sha256": "0e3176ec57714796f5307b02de9a11592ed5e00ab1eb7e72b69d38e61a65db95",
+    "subtype": "PCM_16"
+  },
+  "pink_noise.wav": {
+    "channels": 1,
+    "purpose": "pink noise",
+    "sample_rate": 44100,
+    "sha256": "68f5f03919b189c17573e5f0ed2bef15d199dc00fb411ea2672a57575bf936d8",
+    "subtype": "PCM_16"
+  },
+  "silence.wav": {
+    "channels": 1,
+    "purpose": "digital silence",
+    "sample_rate": 44100,
+    "sha256": "9bf857f5d07d4f812ce979c0c6a882a4eedfe794421e2939ec5f4bb6a9f56f8e",
+    "subtype": "PCM_16"
+  },
+  "silence_stereo.wav": {
+    "channels": 2,
+    "purpose": "stereo silence",
+    "sample_rate": 44100,
+    "sha256": "c909b22fc6f9f56183383a1af02db4b168bca294eb7f0a1bb5716e546a5ba796",
+    "subtype": "PCM_16"
+  },
+  "sine_1k_24bit.wav": {
+    "channels": 1,
+    "purpose": "24-bit reference",
+    "sample_rate": 44100,
+    "sha256": "0915033e2d580993eb8b64962fda84afadf0b31d6178f112bcfe7d0d61b1f0ff",
+    "subtype": "PCM_24"
+  },
+  "sine_1k_float32.wav": {
+    "channels": 1,
+    "purpose": "32-bit float reference",
+    "sample_rate": 44100,
+    "sha256": "deb9aceaeff18c1fab4331ff249ed217e95b9e4e93649f874a1f15bbdd41c619",
+    "subtype": "FLOAT"
+  },
+  "sine_1k_mono.wav": {
+    "channels": 1,
+    "purpose": "clean 1 kHz reference",
+    "sample_rate": 44100,
+    "sha256": "065deb5b5f0b7d37412519690f2a43add2e6e2544c870bfd9f1893cb022df95b",
+    "subtype": "PCM_16"
+  },
+  "sine_1k_stereo.wav": {
+    "channels": 2,
+    "purpose": "clean stereo reference",
+    "sample_rate": 44100,
+    "sha256": "f8ca539a675cc4d0894a1d48293df1460b8e516b2a0186751c682fcc5667866d",
+    "subtype": "PCM_16"
+  },
+  "sine_440.wav": {
+    "channels": 1,
+    "purpose": "440 Hz tone",
+    "sample_rate": 44100,
+    "sha256": "ecf439125ed3848bc30b9b2a2510ea0363ecefe9853858e2fcf8bd05ff679ce7",
+    "subtype": "PCM_16"
+  },
+  "speech_like.wav": {
+    "channels": 1,
+    "purpose": "synthetic voice with sibilant burst",
+    "sample_rate": 44100,
+    "sha256": "988e3d44c4b865ce77a990fa2c60b2b109884cb8b16ab315b78e0fb5c556b594",
+    "subtype": "PCM_16"
+  },
+  "truncated.wav": {
+    "channels": 1,
+    "purpose": "corrupt WAV (truncated below header, <44 bytes)",
+    "sample_rate": 44100,
+    "sha256": "7a4ace865d8178f421e19462ae9580a0ef070bcf085a99ddc4dadb987d6d7e25",
+    "subtype": "PCM_16"
+  },
+  "white_noise.wav": {
+    "channels": 1,
+    "purpose": "white noise",
+    "sample_rate": 44100,
+    "sha256": "5a2eed4c79641ae24b43e158c51db10c323b1e590581b4b91d64a8b495b788e3",
+    "subtype": "PCM_16"
+  }
+}
