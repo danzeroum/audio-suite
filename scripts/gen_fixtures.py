@@ -203,6 +203,8 @@ def gen_truncated_wav(path: Path, valid_bytes: int) -> str:
         data = f.read()
     truncated = data[:valid_bytes]
     path.write_bytes(truncated)
+    # Clean up the full file to avoid confusing soundfile
+    full.unlink(missing_ok=True)
     with open(path, "rb") as f:
         return hashlib.sha256(f.read()).hexdigest()
 
