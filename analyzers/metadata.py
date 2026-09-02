@@ -1,14 +1,13 @@
 """Analyzer: metadados e rights manifest."""
-import mutagen
-from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
+
 
 def run_analyzer(
     pcm: None,  # Não usa PCM
-    media_info: Dict[str, Any],
-    params: Dict[str, Any],
+    media_info: dict[str, Any],
+    params: dict[str, Any],
     verbose: bool = False
-) -> List[Dict]:
+) -> list[dict]:
     """Extrai metadados e valida rights manifest se presente."""
     findings = []
 

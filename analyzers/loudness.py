@@ -1,14 +1,16 @@
 """Analyzer: Loudness (LUFS) conforme EBU R 128."""
+from typing import Any
+
 import numpy as np
-from typing import Dict, Any, List
 import pyloudnorm as pyln
+
 
 def run_analyzer(
     pcm: np.ndarray,
-    media_info: Dict[str, Any],
-    params: Dict[str, Any],
+    media_info: dict[str, Any],
+    params: dict[str, Any],
     verbose: bool = False
-) -> List[Dict]:
+) -> list[dict]:
     """
     Mede loudness integrado e compara com target do profile.
     Params esperados: target_integrated_lufs (float), tolerance_lufs (float)
@@ -26,12 +28,30 @@ def run_analyzer(
     try:
         # pyloudnorm's meter mede diretamente:
         meter = pyln.Meter(48000, block_size=400)  # block_size=400ms conforme EBU R128
+        # pyloudnorm aceita: mono como (frames,) ou (1, frames); stereo como (channels, frames)
         if pcm_norm.ndim == 1:
-            lufs = meter.integrated_loudness(pcm_norm)
+            data_for_meter = pcm_norm
+        elif pcm_norm.ndim == 2:
+            if pcm_norm.shape[1] > 5:
+                raise ValueError("pyloudnorm suporta no máximo 5 canais")
+            # Transpõe para (channels, frames)
+            data_for_meter = pcm_norm.T
         else:
-            # pyloudnorm espera (channels, frames)
-            pcm_t = pcm_norm.T
-            lufs = meter.integrated_loudness(pcm_t)
+            raise ValueError(f"PCM com dims inesperado: {pcm_norm.ndim}")
+
+        lufs = meter.integrated_loudness(data_for_meter)
+        # pyloudnorm retorna -inf para silêncio
+        if not np.isfinite(lufs):
+            findings.append({
+                "name": "Integrated Loudness (LUFS)",
+                "value": None,
+                "unit": "LUFS",
+                "threshold": f"{params.get('target_integrated_lufs', -23.0)} ± {params.get('tolerance_lufs', 0.5)}",
+                "status": "indeterminate",
+                "severity": "info",
+                "description": "Loudness não pôde ser medido (possível silêncio ou sinal muito baixo)."
+            })
+            return findings
 
         target = params.get("target_integrated_lufs", -23.0)
         tol = params.get("tolerance_lufs", 0.5)
@@ -49,19 +69,17 @@ def run_analyzer(
 
         # Short-term e momentary (opcional, para debug)
         if verbose:
-            if pcm_norm.ndim == 1:
-                st = meter.loudness(momentary=True, block_size=0.4)
-                mt = meter.loudness(momentary=True, block_size=3.0)
-            else:
-                st = meter.loudness(pcm_t, momentary=True, block_size=0.4)
-                mt = meter.loudness(pcm_t, momentary=True, block_size=3.0)
-            findings.append({
-                "name": "Momentary Loudness (3s)",
-                "value": float(f"{mt:.2f}"),
-                "unit": "LUFS",
-                "status": "info",
-                "severity": "info"
-            })
+            try:
+                mt = meter.momentary_loudness(data_for_meter)
+                findings.append({
+                    "name": "Momentary Loudness",
+                    "value": float(f"{np.mean(mt):.2f}"),
+                    "unit": "LUFS",
+                    "status": "info",
+                    "severity": "info"
+                })
+            except Exception:
+                pass  # informational only
 
     except Exception as e:
         findings.append({

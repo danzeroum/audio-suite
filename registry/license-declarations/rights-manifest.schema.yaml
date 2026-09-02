@@ -1,0 +1,54 @@
+# Rights manifest schema — F1.5
+# Valida estrutura declarativa de licenças e propósito do projeto.
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: RightsManifest
+type: object
+required:
+  - project
+  - assets_used
+properties:
+  project:
+    type: object
+    required:
+      - name
+      - purpose
+    properties:
+      name:
+        type: string
+      purpose:
+        type: string
+        enum:
+          - commercial_campaign
+          - non_commercial
+          - educational
+          - personal
+          - research
+          - internal
+      territory:
+        type: string
+      language:
+        type: string
+  assets_used:
+    type: array
+    minItems: 0
+    items:
+      type: object
+      required:
+        - asset_id
+        - license
+      properties:
+        asset_id:
+          type: string
+        title:
+          type: string
+        licensor:
+          type: string
+        license:
+          type: string
+        commercial_use_allowed:
+          type: [boolean, "null"]
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type: string

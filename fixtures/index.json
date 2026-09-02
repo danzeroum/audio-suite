@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "fixtures": [
+    "clean_pass",
+    "clipped_sine",
+    "true_peak_over",
+    "lufs_too_hot",
+    "inverted_polarity",
+    "mono_when_stereo_req",
+    "metadata_with_email",
+    "silence_5s",
+    "rights_nc_commercial",
+    "provenance_gap"
+  ],
+  "license": "All fixtures are synthetic (script-generated); no third-party audio."
+}

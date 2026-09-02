@@ -1,0 +1,14 @@
+project:
+  name: "Campanha comercial usando asset NC"
+  purpose: commercial_campaign
+  territory: BR
+  language: pt-BR
+
+assets_used:
+  - asset_id: "freesound:999"
+    title: "Sample NC"
+    licensor: "user@freesound.org"
+    license: "CC-BY-NC-4.0"
+    commercial_use_allowed: false
+    attribution_required: true
+    attribution_text: "Sample NC by user (CC-BY-NC 4.0)"

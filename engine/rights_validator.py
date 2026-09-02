@@ -1,13 +1,14 @@
 """Valida rights manifest declarativo."""
-import yaml
 from pathlib import Path
-from typing import Dict, Any, List
 
-def validate_rights_manifest(manifest_path: Path) -> List[Dict]:
+import yaml
+
+
+def validate_rights_manifest(manifest_path: Path) -> list[dict]:
     """Verifica conflitos entre propósito e licenças."""
     findings = []
     try:
-        with open(manifest_path, "r", encoding="utf-8") as f:
+        with open(manifest_path, encoding="utf-8") as f:
             manifest = yaml.safe_load(f)
 
         purpose = manifest.get("project", {}).get("purpose", "")
@@ -15,7 +16,6 @@ def validate_rights_manifest(manifest_path: Path) -> List[Dict]:
 
         for asset in assets:
             license_type = asset.get("license", "").upper()
-            commercial_allowed = asset.get("commercial_use_allowed", True)
             attribution_req = asset.get("attribution_required", False)
             attribution_text = asset.get("attribution_text", "")
 
@@ -39,7 +39,7 @@ def validate_rights_manifest(manifest_path: Path) -> List[Dict]:
                     "value": asset.get("title", ""),
                     "status": "fail",
                     "severity": "error",
-                    "description": f"Asset com licença que exige atribuição, mas campo attribution_text está vazio."
+                    "description": "Asset com licença que exige atribuição, mas campo attribution_text está vazio."
                 })
 
     except Exception as e:

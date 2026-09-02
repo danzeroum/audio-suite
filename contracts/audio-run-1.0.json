@@ -1,90 +1,102 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Audio Evidence Bundle",
-  "description": "Bundle de evidência gerado pela audio-suite",
+  "description": "Bundle de evidência gerado pela audio-suite v0.2.0-beta",
   "type": "object",
   "properties": {
     "schema": {
       "type": "string",
-      "const": "audio-evidence-bundle/1.0"
+      "pattern": "^urn:audio-suite:bundle:v\\d+\\.\\d+\\.\\d+$"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
     },
     "subject": {
       "type": "object",
       "properties": {
         "path": { "type": "string" },
         "file_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "pcm_canonical_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        "pcm_canonical_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
       },
-      "required": ["path", "file_sha256", "pcm_canonical_sha256"]
+      "required": ["path", "file_sha256"]
     },
     "execution": {
       "type": "object",
       "properties": {
         "suite_version": { "type": "string" },
-        "profile": { "type": "string" },
-        "profile_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "decoder": { "type": "string" },
-        "ffmpeg_version": { "type": "string" },
+        "profile": { "type": ["string", "null"] },
+        "profile_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+        "decoder": { "type": ["string", "null"] },
+        "decoder_used": { "type": "string" },
+        "ffmpeg_version": { "type": ["string", "null"] },
         "sample_rate_hz": { "type": "integer" },
         "status": { "type": "string", "enum": ["completed", "partial", "failed"] },
-        "timestamp": { "type": "string", "format": "date-time" }
+        "timestamp": { "type": "string" },
+        "toctou_detected": { "type": "boolean" }
       },
-      "required": ["suite_version", "profile", "decoder", "status", "timestamp"]
+      "required": ["suite_version", "decoder_used", "sample_rate_hz", "status", "timestamp"]
     },
     "findings": {
       "type": "array",
-      "items": { "$ref": "#/$defs/finding" }
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "value": { "type": ["number", "string", "boolean", "null"] },
+          "unit": { "type": ["string", "null"] },
+          "threshold": { "type": ["string", "number", "null"] },
+          "status": {
+            "type": "string",
+            "enum": ["pass", "fail", "warning", "indeterminate", "not_applicable", "needs_review", "info"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["error", "warning", "info"]
+          },
+          "description": { "type": "string" },
+          "reliability": { "type": ["string", "null"] },
+          "analyzer": { "type": ["string", "null"] }
+        },
+        "required": ["id", "name", "status"]
+      }
     },
     "provenance": {
       "type": "object",
       "properties": {
-        "events": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/provenance_event" }
-        }
+        "events": { "type": "array" }
       }
     },
     "decision": {
       "type": "string",
-      "enum": ["pass", "fail", "indeterminate"]
+      "enum": ["pass", "fail", "warning", "indeterminate", "needs_review"]
     },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "measurement_fingerprint": { "type": "string" },
+    "bundle_sha256": { "type": "string" },
     "signature": {
       "type": "object",
       "properties": {
-        "status": { "type": "string", "enum": ["signed", "unsigned"] },
-        "reason": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["unsigned", "signed-local", "signed-ci"]
+        },
         "algorithm": { "type": "string" },
-        "value": { "type": "string" }
+        "key_id": { "type": ["string", "null"] },
+        "signature_b64": { "type": ["string", "null"] },
+        "timestamp": { "type": ["string", "null"] },
+        "payload_sha256": { "type": ["string", "null"] },
+        "reason": { "type": ["string", "null"] }
       },
       "required": ["status"]
     }
   },
-  "required": ["schema", "subject", "execution", "findings", "provenance", "decision", "signature"],
-  "$defs": {
-    "finding": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "value": { "type": ["number", "string", "null"] },
-        "unit": { "type": ["string", "null"] },
-        "threshold": { "type": ["string", "number", "null"] },
-        "status": { "type": "string", "enum": ["pass", "fail", "warning", "indeterminate", "not_applicable"] },
-        "severity": { "type": "string", "enum": ["error", "warning", "info"] },
-        "description": { "type": "string" }
-      },
-      "required": ["id", "name", "status"]
-    },
-    "provenance_event": {
-      "type": "object",
-      "properties": {
-        "event_type": { "type": "string" },
-        "input_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "output_pcm_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "decoder": { "type": "string" },
-        "timestamp": { "type": "integer" }
-      },
-      "required": ["event_type", "input_sha256", "output_pcm_sha256", "decoder", "timestamp"]
-    }
-  }
+  "required": [
+    "schema", "subject", "execution", "findings", "provenance",
+    "decision", "limitations", "signature"
+  ]
 }

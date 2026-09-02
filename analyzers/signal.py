@@ -1,14 +1,16 @@
 """Analyzer: True peak, sample peak, clipping detection."""
-import numpy as np
-from typing import Dict, Any, List
 import math
+from typing import Any
+
+import numpy as np
+
 
 def run_analyzer(
     pcm: np.ndarray,
-    media_info: Dict[str, Any],
-    params: Dict[str, Any],
+    media_info: dict[str, Any],
+    params: dict[str, Any],
     verbose: bool = False
-) -> List[Dict]:
+) -> list[dict]:
     """
     Mede true peak (dBTP), sample peak (dBFS) e detecta clipping.
     Params: max_true_peak_dbtp (float), allow_clipping (bool)
