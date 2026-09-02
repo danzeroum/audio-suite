@@ -40,6 +40,8 @@ from . import (
     chan_balance,  # noqa: E402,F401
     clipping,  # noqa: E402,F401
     codec_conf,  # noqa: E402,F401
+    deepfake,  # noqa: E402,F401
+    enf_phase,  # noqa: E402,F401
     glitch,  # noqa: E402,F401
     goniometer,  # noqa: E402,F401
     inspect_meta,  # noqa: E402,F401
@@ -52,6 +54,9 @@ from . import (
     resampling,  # noqa: E402,F401
     spatial_coherence,  # noqa: E402,F401
     spectral,  # noqa: E402,F401
+    speech_intelligibility,  # noqa: E402,F401
+    speech_rate,  # noqa: E402,F401
+    stem_sep,  # noqa: E402,F401
     transient,  # noqa: E402,F401
     truepeak,  # noqa: E402,F401
     voice_artif,  # noqa: E402,F401
