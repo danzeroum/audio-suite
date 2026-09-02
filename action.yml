@@ -1,0 +1,31 @@
+name: 'audio-suite analyze'
+description: 'Run audio-suite acoustic analysis on audio files and upload SARIF results'
+inputs:
+  file:
+    description: 'Audio file path to analyze'
+    required: true
+  profile:
+    description: 'Profile YAML path (optional)'
+    required: false
+    default: ''
+  strict:
+    description: 'Apply strict overlay'
+    required: false
+    default: 'false'
+  format:
+    description: 'Output format (sarif recommended for GH integration)'
+    required: false
+    default: 'sarif'
+runs:
+  using: 'docker'
+  image: 'docker://ghcr.io/audio-suite/audio-suite:latest'
+  args:
+    - analyze
+    - ${{ inputs.file }}
+    - --format
+    - ${{ inputs.format }}
+    - --output
+    - /tmp/results.sarif
+branding:
+  icon: 'volume-2'
+  color: 'purple'

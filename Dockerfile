@@ -1,36 +1,29 @@
-# Dockerfile reprodutível para audio-suite v0.2.0-beta (F1.6 + A8)
-#
-# NOTA (A8): Este Dockerfile NÃO é uma GitHub Action por si só. A Action
-# consumível está em `integrations/github-action/` (composite action que
-# instala o pacote via pip no runner). Este Dockerfile é para ambientes
-# que preferem rodar via container.
+FROM python:3.12-slim
 
-FROM python:3.11-slim-bookworm AS base
-
-# Versão fixa do ffmpeg (não é "static" — apt fornece build dinâmico;
-# para binário estático, baixar de johnvansickle.com/ffmpeg/)
-ARG FFMPEG_VERSION=5.1.6
-ENV DEBIAN_FRONTEND=noninteractive
-
+# System audio dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        libsndfile1 \
         ffmpeg \
-        ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
-    && ffmpeg -version | head -1
+    && rm -rf /var/lib/apt/lists/*
 
-# Camada de dependências (cache)
 WORKDIR /app
-COPY pyproject.toml requirements.txt ./
-RUN python -m pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e ".[dev]" || pip install --no-cache-dir -r requirements.txt
 
-# Camada de código
-COPY . .
+# Copy project files
+COPY pyproject.toml README.md ./
+COPY audio_suite ./audio_suite
+COPY tests ./tests
+COPY scripts ./scripts
+COPY profiles ./profiles
 
-# Sanity check
-RUN python -c "import engine; import analyzers; print(engine.__version__)"
+# Install
+RUN pip install --no-cache-dir -e ".[dev]"
 
-# Default entrypoint
-ENTRYPOINT ["python", "-m", "engine.cli"]
-CMD ["--help"]
+# Generate fixtures at build time (deterministic)
+RUN python scripts/gen_fixtures.py
+
+# Run as non-root (UID 1000 is the default non-root user in python:slim)
+USER 1000
+
+ENTRYPOINT ["python", "-m", "audio_suite"]
+CMD ["--version"]
