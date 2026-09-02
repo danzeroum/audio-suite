@@ -178,7 +178,7 @@
     "channels": 1,
     "purpose": "32-bit float reference",
     "sample_rate": 44100,
-    "sha256": "0a7b8346402fdac006be2f9511eaceefa499e3a969ef1f12dcd6a23f964b8143",
+    "sha256": "eda3dbe2ccc778cd28db5dc8549491096db80fc7417e169efbaa980eb7d2f168",
     "subtype": "FLOAT"
   },
   "sine_1k_mono.wav": {
@@ -227,7 +227,7 @@
     "channels": 1,
     "purpose": "synthetic voice with sibilant burst",
     "sample_rate": 44100,
-    "sha256": "988e3d44c4b865ce77a990fa2c60b2b109884cb8b16ab315b78e0fb5c556b594",
+    "sha256": "993a7d7ad03cf97864f19925cdbe3b7ba68eac6342d077ed5b9aad3f6b5f2a9b",
     "subtype": "PCM_16"
   },
   "stereo_wide.wav": {

@@ -164,24 +164,27 @@ def gen_high_bandwidth(sr: int = 96000, dur_s: float = DURATION_S) -> np.ndarray
 
 
 def gen_speech_like(sr: int = SR, dur_s: float = DURATION_S, seed: int = 99) -> np.ndarray:
-    """Modulated noise that vaguely resembles voiced speech."""
+    """Modulated noise that vaguely resembles voiced speech (numpy-only)."""
     rng = np.random.default_rng(seed)
     t = np.arange(int(sr * dur_s)) / sr
     # Pulse train at 150 Hz (F0)
     f0 = 150
     pulse = np.sign(np.sin(2 * np.pi * f0 * t))
     pulse = np.maximum(pulse, 0)
-    # Smooth pulse
-    from scipy.signal import medfilt
-    pulse = medfilt(pulse, kernel_size=11).astype(np.float32)
+    # Smooth pulse with simple moving average (numpy only, avoids scipy)
+    kernel = np.ones(11) / 11
+    pulse = np.convolve(pulse, kernel, mode="same").astype(np.float32)
     # Modulated noise
     noise = rng.standard_normal(len(t)).astype(np.float32) * 0.1
     x = 0.3 * pulse * (1 + noise)
-    # Add a sibilant burst (5-10 kHz emphasis)
+    # Add a sibilant burst (5-10 kHz emphasis) using simple FFT bandpass
     sib = rng.standard_normal(len(t)).astype(np.float32) * 0.5
-    from scipy.signal import butter, sosfilt
-    sos = butter(4, [5000 / (sr / 2), 10000 / (sr / 2)], btype="bandpass", output="sos")
-    sib_filtered = sosfilt(sos, sib).astype(np.float32)
+    # FFT-based bandpass (numpy only, avoids scipy.signal.butter)
+    S = np.fft.rfft(sib)
+    freqs = np.fft.rfftfreq(len(sib), 1.0 / sr)
+    band = (freqs >= 5000) & (freqs <= 10000)
+    S[~band] = 0
+    sib_filtered = np.fft.irfft(S, n=len(sib)).astype(np.float32)
     # Sibilant only in [1.0s, 1.2s]
     mask = np.zeros(len(t), dtype=np.float32)
     s = int(sr * 1.0)
