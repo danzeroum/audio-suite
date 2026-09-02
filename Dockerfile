@@ -22,9 +22,8 @@ RUN pip install --no-cache-dir -e ".[dev]"
 # Generate fixtures at build time (deterministic)
 RUN python scripts/gen_fixtures.py
 
-# Run as non-root (idempotent: create user only if it doesn't exist)
-RUN id audio 2>/dev/null || useradd -m audio
-USER audio
+# Run as non-root (UID 1000 is the default non-root user in python:slim)
+USER 1000
 
 ENTRYPOINT ["python", "-m", "audio_suite"]
 CMD ["--version"]

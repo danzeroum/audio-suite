@@ -132,7 +132,7 @@ jobs:
       - name: Smoke test
         run: |
           docker run --rm audio-suite:ci --version
-          docker run --rm audio-suite:ci inspect /tests/fixtures/generated/sine_1k_mono.wav
+          docker run --rm audio-suite:ci inspect /app/tests/fixtures/generated/sine_1k_mono.wav
 
   release:
     name: Release
