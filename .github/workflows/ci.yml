@@ -40,10 +40,7 @@ jobs:
         run: mypy engine analyzers || true  # non-blocking during Beta; will be enforced in GA
 
       - name: Test with coverage
-        run: |
-          pytest tests --cov=engine --cov=analyzers --cov-report=xml --cov-report=term
-          # Enforce minimum coverage (F2.4)
-          pytest --cov=engine --cov=analyzers --cov-fail-under=70 --co -q || true
+        run: pytest tests --cov=engine --cov=analyzers --cov-report=term --cov-report=xml --cov-fail-under=70
 
       - name: Upload coverage to Codecov
         if: always()
@@ -71,15 +68,16 @@ jobs:
         run: |
           python -m venv /tmp/clean-venv
           /tmp/clean-venv/bin/pip install dist/*.whl
-          /tmp/clean-venv/bin/audio-suite --help || python -m engine.cli --help
+          /tmp/clean-venv/bin/audio-suite --help
 
       - name: Smoke test
         run: |
           python scripts/generate_fixtures.py
-          python -m engine.cli validate fixture-output/clean_pass.wav \
+          python -m engine.cli validate fixtures/clean_pass/audio.wav \
             --profile registry/policy-profiles/broadcast_ebu_r128_v1.yaml \
             --output /tmp/smoke-bundle.json
-          python -m engine.cli inspect fixture-output/clean_pass.wav --analysis basic
+          python -m engine.cli inspect fixtures/clean_pass/audio.wav --analysis basic > /dev/null
+          echo "Smoke test passed"
 
       - name: Audit dependencies
         run: |
