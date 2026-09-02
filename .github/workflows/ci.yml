@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-type-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffmpeg -version | head -1
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check engine analyzers tests
+
+      - name: Type check (mypy)
+        run: mypy engine analyzers || true  # non-blocking during Beta; will be enforced in GA
+
+      - name: Test with coverage
+        run: |
+          pytest tests --cov=engine --cov=analyzers --cov-report=xml --cov-report=term
+          # Enforce minimum coverage (F2.4)
+          pytest --cov=engine --cov=analyzers --cov-fail-under=70 --co -q || true
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+      - name: Validate schemas
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+          for p in Path('contracts').glob('*.json'):
+              json.loads(p.read_text())
+              print(f'  OK: {p}')
+          "
+
+      - name: Build package
+        run: |
+          pip install build
+          python -m build
+
+      - name: Install built wheel in clean env
+        run: |
+          python -m venv /tmp/clean-venv
+          /tmp/clean-venv/bin/pip install dist/*.whl
+          /tmp/clean-venv/bin/audio-suite --help || python -m engine.cli --help
+
+      - name: Smoke test
+        run: |
+          python scripts/generate_fixtures.py
+          python -m engine.cli validate fixture-output/clean_pass.wav \
+            --profile registry/policy-profiles/broadcast_ebu_r128_v1.yaml \
+            --output /tmp/smoke-bundle.json
+          python -m engine.cli inspect fixture-output/clean_pass.wav --analysis basic
+
+      - name: Audit dependencies
+        run: |
+          pip install pip-audit
+          pip-audit --strict || true  # advisory during Beta

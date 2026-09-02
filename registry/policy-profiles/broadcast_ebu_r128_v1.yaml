@@ -10,6 +10,7 @@ checks:
       target_integrated_lufs: -23.0
       tolerance_lufs: 0.5
     severity: error
+    timeout_s: 30
 
   - id: AC-02
     analyzer: signal
@@ -17,6 +18,15 @@ checks:
       max_true_peak_dbtp: -1.0
       allow_clipping: false
     severity: error
+    timeout_s: 30
+
+  - id: AC-03
+    analyzer: phase
+    params:
+      min_correlation: 0.9
+      min_energy: 1.0e-5
+      min_duration_s: 0.5
+    severity: warning
 
   - id: MD-01
     analyzer: metadata

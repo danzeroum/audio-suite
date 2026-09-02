@@ -1,0 +1,27 @@
+# CODEOWNERS
+# Cada pull request que toque estes paths requer review do time responsável.
+
+# Engine e arquitetura
+/engine/                    @danzeroum
+
+# Analyzers
+/analyzers/                 @danzeroum
+
+# Contracts e schemas
+/contracts/                 @danzeroum
+
+# Profiles e rights manifest
+/registry/                  @danzeroum
+
+# Tests e fixtures
+/tests/                     @danzeroum
+/fixtures/                  @danzeroum
+
+# CI e Actions
+/.github/                   @danzeroum
+/integrations/              @danzeroum
+
+# Docs
+/docs/                      @danzeroum
+/README.md                  @danzeroum
+/CONTRIBUTING.md            @danzeroum

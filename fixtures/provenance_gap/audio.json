@@ -1,0 +1,18 @@
+{
+  "events": [
+    {
+      "event_type": "decode_canonical",
+      "input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "output_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "decoder": "ffmpeg",
+      "timestamp": 1234567890
+    },
+    {
+      "event_type": "normalize",
+      "input_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "output_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "decoder": "ffmpeg",
+      "timestamp": 1234567891
+    }
+  ]
+}
