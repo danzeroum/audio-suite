@@ -234,6 +234,37 @@ def cmd_audit(args: argparse.Namespace) -> int:
         return ExitCode.OK
 
 
+def cmd_compare(args: argparse.Namespace) -> int:
+    """ENG-13: objective acoustic diff between two files."""
+    from .compare import compare_files
+
+    try:
+        profile = (
+            load_profile(args.profile, strict=args.strict)
+            if args.profile
+            else load_profile(Path(__file__).parent / "default_profile.yaml")
+        )
+    except ProfileError as exc:
+        return _emit_error(str(exc), ExitCode.INVALID_PROFILE)
+
+    try:
+        diff = compare_files(args.a, args.b, profile=profile)
+    except DecodeError as exc:
+        return _emit_error(str(exc), ExitCode.INVALID_INPUT)
+    except FileNotFoundError as exc:
+        return _emit_error(str(exc), ExitCode.INVALID_INPUT)
+
+    out = json.dumps(diff, indent=2, sort_keys=True, default=str)
+    if args.output:
+        Path(args.output).write_text(out, encoding="utf-8")
+    else:
+        sys.stdout.write(out + "\n")
+
+    if args.fail_on_regression and diff["regression_detected"]:
+        return ExitCode.FINDING
+    return ExitCode.OK
+
+
 def cmd_golden(args: argparse.Namespace) -> int:
     """CORP-04/CORP-04.r: Golden Master de processo.
 
@@ -327,6 +358,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_audit.add_argument("--actor", default="anonymous", help="who performed the action")
     p_audit.add_argument("--verify", action="store_true", help="verify chain integrity")
     p_audit.set_defaults(func=cmd_audit)
+
+    # compare (ENG-13)
+    p_compare = sub.add_parser("compare", help="objective acoustic diff between two files")
+    p_compare.add_argument("a", help="reference file A")
+    p_compare.add_argument("b", help="candidate file B")
+    p_compare.add_argument("--profile", help="profile YAML path (default: built-in)")
+    p_compare.add_argument("--strict", action="store_true", help="apply strict overlay")
+    p_compare.add_argument("--output", "-o", help="write diff.json to path")
+    p_compare.add_argument(
+        "--fail-on-regression",
+        action="store_true",
+        help="exit 1 when regression_detected is true (CI gate)",
+    )
+    p_compare.set_defaults(func=cmd_compare)
 
     # golden (CORP-04/CORP-04.r)
     p_golden = sub.add_parser("golden", help="Golden Master de processo (freeze/verify)")

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audio-suite.dev/schemas/compare-v1.json",
+  "title": "audio-suite Compare Diff v1 (ENG-13)",
+  "description": "Objective acoustic diff between two audio files",
+  "type": "object",
+  "required": ["schema", "tool", "a", "b", "deltas", "findings", "regression_detected", "regression_reasons"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"type": "string", "const": "audio-suite/compare@1"},
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
+    "a": {
+      "type": "object",
+      "required": ["file", "sha256", "flagged_rule_ids"],
+      "properties": {
+        "file": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "flagged_rule_ids": {"type": "array", "items": {"type": "string", "pattern": "^AS-[A-Z]+-[0-9]{3}$"}}
+      }
+    },
+    "b": {
+      "type": "object",
+      "required": ["file", "sha256", "flagged_rule_ids"],
+      "properties": {
+        "file": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "flagged_rule_ids": {"type": "array", "items": {"type": "string", "pattern": "^AS-[A-Z]+-[0-9]{3}$"}}
+      }
+    },
+    "deltas": {
+      "type": "object",
+      "description": "ΔLUFS, ΔdBTP, ΔLRA, Δmono band loss (B - A)",
+      "additionalProperties": {"type": "number"}
+    },
+    "findings": {
+      "type": "object",
+      "required": ["only_in_a", "only_in_b", "unchanged"],
+      "properties": {
+        "only_in_a": {"type": "array", "items": {"type": "string", "pattern": "^AS-[A-Z]+-[0-9]{3}$"}},
+        "only_in_b": {"type": "array", "items": {"type": "string", "pattern": "^AS-[A-Z]+-[0-9]{3}$"}},
+        "unchanged": {"type": "array", "items": {"type": "string", "pattern": "^AS-[A-Z]+-[0-9]{3}$"}}
+      }
+    },
+    "observations": {
+      "type": "array",
+      "description": "Descriptive-class findings (R1: never cause regression)",
+      "items": {
+        "type": "object",
+        "required": ["rule_id", "analyzer", "metric", "status"],
+        "properties": {
+          "rule_id": {"type": "string"},
+          "analyzer": {"type": "string"},
+          "metric": {"type": "string"},
+          "value": {"type": ["number", "null"]},
+          "status": {"type": "string"},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "regression_detected": {"type": "boolean"},
+    "regression_reasons": {"type": "array", "items": {"type": "string"}},
+    "note": {"type": "string"}
+  }
+}
