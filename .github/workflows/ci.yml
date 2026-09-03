@@ -111,6 +111,35 @@ jobs:
       - name: Lint rule registry (descriptive never fails)
         run: python scripts/lint_rule_registry.py
 
+  conformance-oracle:
+    name: Cross-oracle matrix (CONF-03.r, non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install system audio deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsndfile1
+      - name: Install Python dependencies
+        run: pip install -e ".[dev]"
+      - name: Generate fixtures
+        run: python scripts/gen_fixtures.py
+      - name: Run oracle matrix (skip if MIXLIROUS_CLI absent)
+        env:
+          MIXLIROUS_CLI: ${{ vars.MIXLIROUS_CLI }}
+        run: pytest tests/conformance/test_CONF03_mixlirous_oracle.py -v -s
+      - name: Upload oracle matrix artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-matrix
+          path: test-results/oracle-matrix.json
+          if-no-files-found: ignore
+
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest

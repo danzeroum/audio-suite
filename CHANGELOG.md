@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — CONF-03.r (Onda 5)
+- **mixlirous como oráculo adicional na matriz de validação cruzada** (`tests/conformance/test_CONF03_mixlirous_oracle.py`): o loudness Rust do mixlirous roda via CLI/subprocess sobre o mesmo corpus de calibração dos oráculos Python (sinais seed-based com níveis conhecidos) — **nenhuma dependência de código**, apenas comparação de resultados numéricos.
+- Padrão CONS: divergência entre oráculos é **investigação, não erro automático** — a matriz (`test-results/oracle-matrix.json`, artifact de CI) marca `needs_investigation` (limiar 0,5 LU) e o teste continua verde.
+- Skip por default (CLI Rust não é dependência do repo Python); habilitar com `MIXLIROUS_CLI=...`. Job CI `conformance-oracle` (não-bloqueante) publica o artifact.
+- Adapter validado com binário fake (matriz 5/5 consistentes, Δ 0,01 LU).
+
 ### Added — PROF-08.r (Onda 4)
 - **Linter do registry de rule_ids** (`scripts/lint_rule_registry.py`): a R1 deixa de ser promessa e vira teste executável em três camadas — (1) perfis shipped: nenhum strict_overlay mapeia métrica descritiva/forense (AS-DESC-*/AS-FORE-*) para fail; (2) probe dinâmico: todos os analyzers rodam sobre 5 sinais sintéticos canônicos — nenhum finding never-fail termina em fail/error; (3) scan estático AST: módulos com regras never-fail (descriptors.py, lra.py) não podem conter literais `Status.FAIL/Status.ERROR`.
 - CI (job `rule-registry-lint`) + hook `.githooks/pre-commit` (linter + anti-binários; ativar com `git config core.hooksPath .githooks`).
