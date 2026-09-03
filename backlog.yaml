@@ -1,0 +1,86 @@
+# Backlog operacionalizado para GitHub Issues (GOV-13).
+# Fonte: docs/desenvolvimento/documento-mestre-v1.2.md (Adendo B, Parte VI).
+# O script scripts/sync_issues.py materializa estes IDs como issues de forma
+# IDEMPOTENTE (marker oculto no corpo da issue = chave de idempotência).
+
+schema: audio-suite/backlog-sync@1
+labels:
+  onda: {color: "1d76db", description: "Onda de implementação (Documento Mestre)"}
+  prio: {color: "d93f0b", description: "Prioridade do backlog"}
+
+items:
+  - id: CORP-01.r
+    title: "CORP-01.r — Fixtures seed-based como fonte primária + política anti-binários"
+    onda: 3
+    prio: p1
+  - id: CORP-04
+    title: "CORP-04 — Golden files por analyzer (regressão de processo)"
+    onda: 3
+    prio: p1
+  - id: CORP-04.r
+    title: "CORP-04.r — Processo de freeze do Golden Master (label golden-regen + diff artifacts)"
+    onda: 3
+    prio: p1
+  - id: CORP-08
+    title: "CORP-08 — Corpus de defeito injetado com ground truth (precisão/recall por detector)"
+    onda: 3
+    prio: p1
+  - id: TEST-03.r
+    title: "TEST-03.r — Fuzz fail-open → fail-closed com ADR de transição"
+    onda: 3
+    prio: p1
+  - id: ENG-13
+    title: "ENG-13 — audio-suite compare A.wav B.wav (diff objetivo + regression_detected)"
+    onda: 4
+    prio: p1
+  - id: EVID-02.r+
+    title: "EVID-02.r+ — Snapshot de ambiente ampliado (profile resolvido, environment_hash, backend DSP)"
+    onda: 4
+    prio: p2
+  - id: EVID-07
+    title: "EVID-07 — reproduction_command no bundle JSON/SARIF"
+    onda: 4
+    prio: p2
+  - id: EVID-08
+    title: "EVID-08 — --frozen-manifest (+--strict): reprodutibilidade forte de laudo"
+    onda: 4
+    prio: p2
+  - id: GOV-11
+    title: "GOV-11 — docs/adr/ com template e ADRs iniciais"
+    onda: 4
+    prio: p2
+  - id: GOV-12
+    title: "GOV-12 — AGENTS.md (handoff para agentes de IA)"
+    onda: 4
+    prio: p2
+  - id: GOV-13
+    title: "GOV-13 — Sync backlog ↔ GitHub Issues (este script)"
+    onda: 4
+    prio: p2
+  - id: PROF-08.r
+    title: "PROF-08.r — Linter do registry de rule_ids (descritivo nunca fail)"
+    onda: 4
+    prio: p1
+  - id: CONF-03.r
+    title: "CONF-03.r — Loudness Rust do mixlirous como oráculo adicional (matriz de validação cruzada)"
+    onda: 5
+    prio: p2
+  - id: PROF-06.r
+    title: "PROF-06.r — Sub-variantes de music-master (streaming/shortform/club) com herança"
+    onda: 5
+    prio: p2
+  - id: DOCS-04.r
+    title: "DOCS-04.r — Caso de uso: gate pós-render do mixlirous (mapeamento 0,05/0,15/0,35)"
+    onda: 5
+    prio: p2
+
+archived_with_trigger:
+  - id: VI.2-Rust
+    title: "Eixo Rust (ARQUIVADO COM GATILHO) — ADR-0001 bloqueante → port → paridade ±2σ → [dsp-rust]"
+    note: "gatilho: TEST-05 violado em ≥2 analyzers OU demanda via ENG-03. NÃO implementar sem o gatilho."
+  - id: BACKLOG-13
+    title: "Wrapper HTTP do CLI (compose QA)"
+    note: "gatilho: ≥2 consumidores programáticos."
+  - id: BACKLOG-14
+    title: "Pacote OPS (trace_id UUIDv7, audit_events multi-tenant, observabilidade)"
+    note: "gatilho: modo serviço."
