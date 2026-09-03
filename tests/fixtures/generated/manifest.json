@@ -1,267 +1,343 @@
 {
   "aliasing.wav": {
     "channels": 1,
+    "generator": "gen_aliasing",
     "purpose": "aliasing test",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "af76a98afba6a80a953e06d730839fc3cf8f3f3b78bf35ac67fb14f254c687f1",
     "subtype": "PCM_16"
   },
   "am_modulated.wav": {
     "channels": 1,
+    "generator": "gen_modulated_am",
     "purpose": "AM-modulated",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "9cf34c99847c42f11b6230aa40f7667a434ab3561a210580426c56a755f8299d",
     "subtype": "PCM_16"
   },
   "audio.txt": {
     "channels": 0,
+    "generator": "non_audio",
     "purpose": "non-audio",
     "sample_rate": 0,
+    "seed": null,
     "sha256": "e23b51a40d21aad70200ec1f08c6e4883d6ca40c22b6ffbdff306c9c62c408e4",
     "subtype": ""
   },
   "click_500ms.wav": {
     "channels": 1,
+    "generator": "gen_click",
     "purpose": "click at 500ms",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "97a60dac025c9ab0305c4bf3d9e500c4466eb329b756abf1957f30718eaca6b0",
     "subtype": "PCM_16"
   },
   "clipped.wav": {
     "channels": 1,
+    "generator": "gen_clipped",
     "purpose": "hard-clipped sine",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "4a51f6b74b26a7be781a3039d95990a2252b0ce9cd28bccd9353467015a9d641",
     "subtype": "PCM_16"
   },
   "dc_offset.wav": {
     "channels": 1,
+    "generator": "gen_dc_offset",
     "purpose": "signal with DC offset",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "b6eefc9f1ee121843c6eee83e9daea738d3525f35d750ef5df354d0cfe66e813",
     "subtype": "PCM_16"
   },
   "dropout_100ms.wav": {
     "channels": 1,
+    "generator": "gen_dropout",
     "purpose": "100ms dropout",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "0e36a52e451f12cc3f786b1dde5d87f646c0d747b7328124c5ae59519ec2cbcb",
     "subtype": "PCM_16"
   },
   "dropout_50ms.wav": {
     "channels": 1,
+    "generator": "gen_dropout",
     "purpose": "50ms dropout",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "7199c8af9cad7de61341e6646462e2f9b5362b67522cdf82890a71a8d04337d2",
     "subtype": "PCM_16"
   },
   "dual_mono.wav": {
     "channels": 2,
+    "generator": "gen_dual_mono",
     "purpose": "dual mono (L==R)",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "de1f105b4928882129901dace7ae3942af48d4d3548b1f45c22578f7c508a9fd",
     "subtype": "PCM_16"
   },
   "empty.wav": {
     "channels": 0,
+    "generator": "empty_file",
     "purpose": "empty file",
     "sample_rate": 0,
+    "seed": null,
     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "subtype": ""
   },
   "freq_sweep.wav": {
     "channels": 1,
+    "generator": "gen_freq_sweep",
     "purpose": "log frequency sweep",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "4d79772d4c64e2d5ab062b50daea9a801c773608beb21c2d75490a4189dc6593",
     "subtype": "PCM_16"
   },
   "high_bw_96k.wav": {
     "channels": 1,
+    "generator": "gen_high_bandwidth",
     "purpose": "96 kHz high bandwidth",
     "sample_rate": 96000,
-    "sha256": "b784482eb9cf2322a7b25de2b05fab35fae28611d17b950803a3318ecee7195d",
+    "seed": null,
+    "sha256": "67cd272a6adc0b9b8ebb1b4ef01e006be9fbbcb49361895cac443d952fe3af8b",
     "subtype": "PCM_16"
   },
   "interleaved_noise.wav": {
     "channels": 1,
+    "generator": "gen_interleaved_noise",
     "purpose": "periodic noise bursts",
     "sample_rate": 44100,
+    "seed": 0,
     "sha256": "e3a85f469bd3562b0848ffe1112cfdb61093731de83195c0671ff2d727a52f1c",
     "subtype": "PCM_16"
   },
   "long_30s.wav": {
     "channels": 1,
+    "generator": "gen_very_long_30s",
     "purpose": "30-second signal",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "abb8ff8571b32e897fca72882e8f60e3cf6940748cb870f53498f2b51b4b7a02",
     "subtype": "PCM_16"
   },
   "loop_clean.wav": {
     "channels": 1,
+    "generator": "gen_loop_clean",
     "purpose": "loop wraps cleanly",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "26ef0689122a13dd10a1cd3ce8b31e0f99eae9ac96f6bcb8ee38804588be9c46",
     "subtype": "PCM_16"
   },
   "loop_discontinuous.wav": {
     "channels": 1,
+    "generator": "gen_loop_discontinuous",
     "purpose": "loop discontinuous",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "761b9743aaa6451cb103ff5cfc7c3944e2f574d63ca5fdd01fdbc0c748752f6d",
     "subtype": "PCM_16"
   },
   "louder_left.wav": {
     "channels": 2,
+    "generator": "gen_louder_left",
     "purpose": "L louder than R",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "45e0f72c9bc9dc315397d8e432fc74274590340b63be11803b5787ce59d1111b",
     "subtype": "PCM_16"
   },
   "low_snr.wav": {
     "channels": 1,
+    "generator": "gen_low_snr",
     "purpose": "low SNR signal",
     "sample_rate": 44100,
+    "seed": 123,
     "sha256": "afbda832a331a48a11d8f0aaebe07b5e571438a1375d8c785593b18eaa1f9dff",
     "subtype": "PCM_16"
   },
   "phase_inverted.wav": {
     "channels": 2,
+    "generator": "gen_phase_inverted_stereo",
     "purpose": "L=-R phase inverted",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "0e3176ec57714796f5307b02de9a11592ed5e00ab1eb7e72b69d38e61a65db95",
     "subtype": "PCM_16"
   },
   "pink_noise.wav": {
     "channels": 1,
+    "generator": "gen_pink_noise",
     "purpose": "pink noise",
     "sample_rate": 44100,
+    "seed": 7,
     "sha256": "68f5f03919b189c17573e5f0ed2bef15d199dc00fb411ea2672a57575bf936d8",
     "subtype": "PCM_16"
   },
   "polarity_inverted.wav": {
     "channels": 1,
+    "generator": "gen_polarity_inverted",
     "purpose": "polarity flip",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "b347d5feb55a5beaa16a7c26faf9609df5f7d36d3a0207207fb4d4e2c836359b",
     "subtype": "PCM_16"
   },
   "short_1s.wav": {
     "channels": 1,
+    "generator": "gen_short_1s",
     "purpose": "1-second signal",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "dbc7f0cf332f82bc759b567f9e81d8c8015f0c5388175c4dced2a8f292384d2c",
     "subtype": "PCM_16"
   },
   "silence.wav": {
     "channels": 1,
+    "generator": "gen_silence",
     "purpose": "digital silence",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "9bf857f5d07d4f812ce979c0c6a882a4eedfe794421e2939ec5f4bb6a9f56f8e",
     "subtype": "PCM_16"
   },
   "silence_stereo.wav": {
     "channels": 2,
+    "generator": "gen_silence",
     "purpose": "stereo silence",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "c909b22fc6f9f56183383a1af02db4b168bca294eb7f0a1bb5716e546a5ba796",
     "subtype": "PCM_16"
   },
   "sine_1k_24bit.wav": {
     "channels": 1,
+    "generator": "gen_sine",
     "purpose": "24-bit reference",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "0915033e2d580993eb8b64962fda84afadf0b31d6178f112bcfe7d0d61b1f0ff",
     "subtype": "PCM_24"
   },
   "sine_1k_float32.wav": {
     "channels": 1,
+    "generator": "gen_sine",
     "purpose": "32-bit float",
     "sample_rate": 44100,
-    "sha256": "f3fe1f1b9f2e88e0327ba5617f1063ff02b352a5c3b2d0739401886cf2f37fcb",
+    "seed": null,
+    "sha256": "9a44090040ead897f39ebfa4e2ac10f86868d6707a6d68e1865ba26b7e6d55d9",
     "subtype": "FLOAT"
   },
   "sine_1k_mono.wav": {
     "channels": 1,
+    "generator": "gen_sine",
     "purpose": "clean 1 kHz reference",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "065deb5b5f0b7d37412519690f2a43add2e6e2544c870bfd9f1893cb022df95b",
     "subtype": "PCM_16"
   },
   "sine_1k_stereo.wav": {
     "channels": 2,
+    "generator": "gen_sine",
     "purpose": "clean stereo reference",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "f8ca539a675cc4d0894a1d48293df1460b8e516b2a0186751c682fcc5667866d",
     "subtype": "PCM_16"
   },
   "sine_220.wav": {
     "channels": 1,
+    "generator": "gen_sine",
     "purpose": "220 Hz tone",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "09b0ab74c680d14b7cd770d59875e8e67c113159c6bd9fdaf3e2f9e331e90472",
     "subtype": "PCM_16"
   },
   "sine_440.wav": {
     "channels": 1,
+    "generator": "gen_sine",
     "purpose": "440 Hz tone",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "ecf439125ed3848bc30b9b2a2510ea0363ecefe9853858e2fcf8bd05ff679ce7",
     "subtype": "PCM_16"
   },
   "sine_8k.wav": {
     "channels": 1,
+    "generator": "gen_sine",
     "purpose": "8 kHz tone",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "ed2e198c99f644354b6df252c2115841f98498c1fd3c3a0ab9473f2fbeee6cb8",
     "subtype": "PCM_16"
   },
   "sine_amped.wav": {
     "channels": 1,
+    "generator": "gen_sine_amped",
     "purpose": "high-amplitude sine",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "8ea1225f1be7f1dbec9e78b2954f3074d222f4649c518ee0b974a7d0a89fb2da",
     "subtype": "PCM_16"
   },
   "speech_like.wav": {
     "channels": 1,
+    "generator": "gen_speech_like",
     "purpose": "synthetic speech",
     "sample_rate": 44100,
+    "seed": 99,
     "sha256": "993a7d7ad03cf97864f19925cdbe3b7ba68eac6342d077ed5b9aad3f6b5f2a9b",
     "subtype": "PCM_16"
   },
   "stereo_wide.wav": {
     "channels": 2,
+    "generator": "gen_stereo_wide",
     "purpose": "wide stereo",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "6149cc6b6fdcfdb6bdf53db1f65b169405580b6793141ca68d8605af3234c0bb",
     "subtype": "PCM_16"
   },
   "truncated.wav": {
     "channels": 1,
+    "generator": "gen_truncated_wav_bytes",
     "purpose": "truncated WAV",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "7a4ace865d8178f421e19462ae9580a0ef070bcf085a99ddc4dadb987d6d7e25",
     "subtype": "PCM_16"
   },
   "two_tone.wav": {
     "channels": 1,
+    "generator": "gen_two_tone",
     "purpose": "440+880 Hz two-tone",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "630d8632e0040fd0efb4cd4d9ec2d86f6d62e0dbf4db7c952858057f813cb4f7",
     "subtype": "PCM_16"
   },
   "violin_like.wav": {
     "channels": 1,
+    "generator": "gen_violin_like",
     "purpose": "harmonic violin-like",
     "sample_rate": 44100,
+    "seed": null,
     "sha256": "c4aa4880e8338cf4a18e206d5da65bd44aa9a318a473d8165b7347702c1743d3",
     "subtype": "PCM_16"
   },
   "white_noise.wav": {
     "channels": 1,
+    "generator": "gen_white_noise",
     "purpose": "white noise",
     "sample_rate": 44100,
+    "seed": 42,
     "sha256": "5a2eed4c79641ae24b43e158c51db10c323b1e590581b4b91d64a8b495b788e3",
     "subtype": "PCM_16"
   }

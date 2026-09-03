@@ -37,6 +37,16 @@ jobs:
         # We still audit all installed dependencies for known CVEs.
         run: pip-audit --skip-editable
 
+  policy-binaries:
+    name: Policy — no large binaries (CORP-01.r)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: No audio binary > 1 MB committed
+        run: python scripts/check_no_large_binaries.py
+
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
