@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — PROF-08.r (Onda 4)
+- **Linter do registry de rule_ids** (`scripts/lint_rule_registry.py`): a R1 deixa de ser promessa e vira teste executável em três camadas — (1) perfis shipped: nenhum strict_overlay mapeia métrica descritiva/forense (AS-DESC-*/AS-FORE-*) para fail; (2) probe dinâmico: todos os analyzers rodam sobre 5 sinais sintéticos canônicos — nenhum finding never-fail termina em fail/error; (3) scan estático AST: módulos com regras never-fail (descriptors.py, lra.py) não podem conter literais `Status.FAIL/Status.ERROR`.
+- CI (job `rule-registry-lint`) + hook `.githooks/pre-commit` (linter + anti-binários; ativar com `git config core.hooksPath .githooks`).
+- **DoD demonstrado**: `Status.FAIL` injetado no `timbre_distance` → linter rejeita com 5 violações (exit 1); revertido → exit 0. Teste de unidade reproduz a violação via analyzer renegado no registry sandbox.
+
 ### Added — GOV-13 (Onda 4)
 - **Sync backlog ↔ GitHub Issues** (`scripts/sync_issues.py` + `backlog.yaml`): materializa os 16 IDs das Ondas 3–5 como issues com labels `onda/<N>` e `prio/<pN>`, idempotente por marker oculto no corpo (`<!-- audio-suite-backlog: <ID> -->`). Itens arquivados com gatilho (VI.2, BACKLOG-13/14) não viram issue por padrão (opt-in `--include-archived`). Resiliente a token sem permissão de edição (avisa e continua). Labels `onda/3..5` + `prio/p0..p3` criadas no repo; 16 issues materializadas (#20–#35); re-execução: 0 duplicatas.
 

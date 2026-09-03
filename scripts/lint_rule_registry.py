@@ -98,7 +98,6 @@ def _probe_signals() -> list[tuple[str, PCM]]:
     stereo = np.stack([(0.3 * np.sin(2 * np.pi * 440 * t)), (0.3 * np.sin(2 * np.pi * 554 * t))]).astype(
         np.float32
     )
-    stub = Profile(name="lint", version="0", analyzers={})
     return [
         ("mono_sine", PCM(samples=mono, sample_rate=sr)),
         ("noise", PCM(samples=noise, sample_rate=sr)),
@@ -165,15 +164,16 @@ def lint_static() -> list[str]:
             continue
         source = py.read_text(encoding="utf-8")
         for node in ast.walk(ast.parse(source)):
-            targets = []
-            if isinstance(node, ast.Attribute) and node.attr in ("FAIL", "ERROR"):
-                if isinstance(node.value, ast.Name) and node.value.id == "Status":
-                    targets.append(f"Status.{node.attr}")
-            for lit in targets:
+            if (
+                isinstance(node, ast.Attribute)
+                and node.attr in ("FAIL", "ERROR")
+                and isinstance(node.value, ast.Name)
+                and node.value.id == "Status"
+            ):
                 line = getattr(node, "lineno", "?")
                 violations.append(
                     f"{py.relative_to(ROOT)}:{line}: módulo com regras never-fail "
-                    f"contém {lit} — descritivo/forense não pode falhar (R1/R8)"
+                    f"contém Status.{node.attr} — descritivo/forense não pode falhar (R1/R8)"
                 )
     return violations
 
