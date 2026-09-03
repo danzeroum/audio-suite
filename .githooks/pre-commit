@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# PROF-08.r — R1 deixa de ser promessa: bloqueia commit com descritivo em fail.
+# Ativar: git config core.hooksPath .githooks
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+python scripts/lint_rule_registry.py
+python scripts/check_no_large_binaries.py
