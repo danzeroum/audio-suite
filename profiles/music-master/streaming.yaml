@@ -1,0 +1,13 @@
+# music-master/streaming — Spotify/Apple/deezer (PROF-06.r)
+# Target canônico de streaming: −14 LUFS integrado, teto −1,0 dBTP.
+extends: ../music-master
+
+name: music-master/streaming
+version: "1.0.0"
+
+analyzers:
+  loudness:
+    min_lufs: -15.0
+    max_lufs: -13.0
+  true_peak:
+    max_dbtp: -1.0

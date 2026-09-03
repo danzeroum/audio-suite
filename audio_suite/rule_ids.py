@@ -80,6 +80,20 @@ def get_rule_id(analyzer: str, metric: str) -> str | None:
     return RULE_IDS.get((analyzer, metric))
 
 
+def rule_id_class(rule_id: str) -> str:
+    """Classificação estrutural do rule_id (PROF-08.r).
+
+    - "descriptive": AS-DESC-* — nunca causa fail (R1)
+    - "forensic": AS-FORE-* — nunca conclui autenticidade (R8); needs_review
+    - "objective": demais — pode escalar via profile
+    """
+    if rule_id.startswith("AS-DESC-"):
+        return "descriptive"
+    if rule_id.startswith("AS-FORE-"):
+        return "forensic"
+    return "objective"
+
+
 # Severity mapping (CONTR-03)
 SEVERITY_MAP: dict[str, str] = {
     "pass": "info",

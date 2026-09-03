@@ -1,0 +1,14 @@
+# music-master/club — sistemas de PA / clubes (PROF-06.r)
+# Headroom maior no true peak (−2,0 dBTP): cadeias ao vivo somam ganho antes
+# do limitador; loudness levemente acima do streaming (−14..−11 LUFS).
+extends: ../music-master
+
+name: music-master/club
+version: "1.0.0"
+
+analyzers:
+  loudness:
+    min_lufs: -14.0
+    max_lufs: -11.0
+  true_peak:
+    max_dbtp: -2.0
