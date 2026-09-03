@@ -256,6 +256,7 @@ def test_T109_full_signed_pipeline(tmp_path):
         "findings": data["findings"],
         "aggregate_status": data["aggregate_status"],
         "measurement_fingerprint": data["measurement_fingerprint"],
+        "environment": data["environment"],
     }
     assert verify_payload(signed_payload, data["signature"]) is True
 

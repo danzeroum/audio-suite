@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — EVID-02.r+ (Onda 4)
+- **Snapshot de ambiente ampliado** no bundle e no SARIF (`audio_suite/environment.py`): versões (python/numpy/scipy/soundfile), plataforma, **SHA-256 do profile YAML resolvido** (com defaults dos schemas aplicados, canônico), **versão de cada analyzer**, e **`dsp_backend`** (`python` — reference implementation; campo existe para o futuro backend gated, VI.2).
+- **`environment_hash`**: SHA-256 do JSON canônico do snapshot.
+- **Quebra de contrato declarada (SemVer 0.x):** a assinatura Ed25519 agora cobre também o bloco `environment` — laudos assinados antes de 2026-09-03 não verificam com a nova versão sem re-verificação pelo payload antigo. `schemas/bundle-v1.json` atualizado (campos opcionais).
+
 ### Added — ENG-13 (Onda 4)
 - **`audio-suite compare A.wav B.wav`** (maior valor do plano): diff acústico objetivo — ΔLUFS, ΔdBTP, ΔLRA, Δmono band loss; achados novos por rule_id (CONTR-02) em `findings.only_in_b`; descritores **sempre** como `observations` (R1 — nunca geram regressão).
 - Saída `diff.json` com `regression_detected: bool` — true **somente** para defeito objetivo novo (rule_id flagado em B e não em A). Validação CONTR-01 contra `schemas/compare-v1.json` (nova). Flag `--fail-on-regression` para gate de CI.
