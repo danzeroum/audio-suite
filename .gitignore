@@ -62,3 +62,8 @@ worklog.md
 
 # Skills (internal)
 skills/
+
+# Environment
+.env
+.env.*
+!.env.example

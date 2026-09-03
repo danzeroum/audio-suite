@@ -5,6 +5,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+# Increase recursion limit to avoid scipy/numpy recursion issues on CI
+sys.setrecursionlimit(10000)
+
 import numpy as np
 import pytest
 

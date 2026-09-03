@@ -154,6 +154,56 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     return ExitCode.OK
 
 
+def cmd_compliance(args: argparse.Namespace) -> int:
+    """PROF-07: check delivery compliance for a target platform."""
+    TARGETS = {
+        "ebu": {"name": "EBU R128", "lufs_target": -23.0, "lufs_tolerance": 0.5, "max_dbtp": -1.0},
+        "spotify": {"name": "Spotify", "lufs_target": -14.0, "lufs_tolerance": 1.0, "max_dbtp": -1.0},
+        "podcast": {"name": "Podcast", "lufs_target": -16.0, "lufs_tolerance": 1.0, "max_dbtp": -1.0},
+        "atsc": {"name": "ATSC A/85", "lufs_target": -24.0, "lufs_tolerance": 2.0, "max_dbtp": -2.0},
+        "cine": {"name": "Cinema", "lufs_target": -27.0, "lufs_tolerance": 2.0, "max_dbtp": -2.0},
+    }
+    spec = TARGETS.get(args.target)
+    if not spec:
+        return _emit_error(f"unknown target: {args.target}", ExitCode.USAGE)
+    try:
+        audio = decode(args.file)
+    except DecodeError as exc:
+        return _emit_error(str(exc), ExitCode.INVALID_INPUT)
+    from .analyzers.loudness import compute_loudness_lufs
+    from .analyzers.truepeak import compute_true_peak_dbtp
+
+    lufs = compute_loudness_lufs(audio)
+    tp_dbtp, sp_dbfs = compute_true_peak_dbtp(audio)
+    lufs_ok = abs(lufs - spec["lufs_target"]) <= spec["lufs_tolerance"]
+    tp_ok = tp_dbtp <= spec["max_dbtp"]
+    matrix = {
+        "target": args.target,
+        "spec_name": spec["name"],
+        "measurements": {"integrated_lufs": round(lufs, 2), "true_peak_dbtp": round(tp_dbtp, 3)},
+        "requirements": {
+            "lufs_target": spec["lufs_target"],
+            "lufs_tolerance": spec["lufs_tolerance"],
+            "max_dbtp": spec["max_dbtp"],
+        },
+        "compliance": {
+            "lufs": "pass" if lufs_ok else "fail",
+            "true_peak": "pass" if tp_ok else "fail",
+            "overall": "pass" if (lufs_ok and tp_ok) else "fail",
+        },
+        "delta": {
+            "lufs_delta": round(lufs - spec["lufs_target"], 2),
+            "true_peak_margin": round(spec["max_dbtp"] - tp_dbtp, 3),
+        },
+    }
+    out = json.dumps(matrix, indent=2)
+    if args.output:
+        Path(args.output).write_text(out)
+    else:
+        sys.stdout.write(out + "\n")
+    return ExitCode.OK if (lufs_ok and tp_ok) else ExitCode.FINDING
+
+
 def cmd_self_check(args: argparse.Namespace) -> int:
     """Fase 3.5: verify installation integrity."""
     from .audit import self_check
@@ -230,6 +280,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_audit.add_argument("--actor", default="anonymous", help="who performed the action")
     p_audit.add_argument("--verify", action="store_true", help="verify chain integrity")
     p_audit.set_defaults(func=cmd_audit)
+
+    # compliance (PROF-07)
+    p_compliance = sub.add_parser("compliance", help="check delivery compliance")
+    p_compliance.add_argument("file", help="audio file path")
+    p_compliance.add_argument(
+        "--target", required=True, choices=["ebu", "spotify", "podcast", "atsc", "cine"]
+    )
+    p_compliance.add_argument("--output", "-o")
+    p_compliance.set_defaults(func=cmd_compliance)
 
     return p
 

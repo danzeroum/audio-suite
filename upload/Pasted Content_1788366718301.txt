@@ -1,0 +1,327 @@
+# 📋 DOCUMENTO MESTRE — audio-suite
+## Especificação de Melhorias, Backlog Consolidado e Plano de Execução para Agente Desenvolvedor
+
+> **Versão:** 1.0 · **Status:** Aprovado para implementação · **Escopo:** consolidação validada de 6 análises externas (R1–R4, R7, R8, R9) contra o backlog interno
+>
+> **Instrução inicial ao agente:** antes de qualquer implementação, audite o estado atual do repositório contra este documento — os itens podem estar parcialmente implementados. Marque o status de cada ID (`pendente` / `em andamento` / `concluído`) como primeira atividade.
+
+---
+
+# PARTE I — CONTEXTO E REGRAS
+
+## 1. Identidade do projeto
+
+**audio-suite** (`github.com/danzeroum/audio-suite`, branch `main`) é uma CLI Python de análise acústica objetiva para QC de áudio *evidence-grade* — broadcast, MAM/DAM, perícia, pipelines de IA de voz. Posicionamento-alvo:
+
+> *"Evidence-grade audio QC: deterministic, signed, standards-verified."*
+
+| Camada | Estado atual (commit `b2b5f72`) |
+|---|---|
+| Analyzers | **35 registrados** (loudness BS.1770-4, true_peak, clipping, glitch, LRA R128, transient, phase, spatial_coherence, goniometer, multichannel_layout 5.1/7.1, stem_sep SI-SDR, acoustic_context RT60, deepfake opt-in, enf_phase experimental, acoustic_fingerprint 256-bit, metadata_schema_validator EBUCore/Dublin Core, e outros) — cada um com contrato `ID/NAME/VERSION/METHOD/DEFAULT_LIMITATIONS` |
+| Motor | `engine.py` (descoberta, TOCTOU), `policy.py` (perfis YAML + lockfile), `cartridge.py` (plugins externos) |
+| Evidência | `bundle.py` (schema URN, fingerprint de medição, quantização), `security/` (Ed25519 em 3 modos, redação PII), `audit.py` (JSONL append-only com hash-chain + self-check) |
+| Outputs | JSON, SARIF 2.1.0, HTML (WCAG), CSV |
+| Entrega | `action.yml` (GitHub Action com upload SARIF), Dockerfile (python:3.12-slim, non-root), CI: ruff + mypy + pip-audit + pytest 3.11/3.12/3.13 |
+| Testes | ~203 passando (T01–T110, CT01–CT15, EV01–EV12, SG01–SG12, IN01–IN15), cobertura declarada 86%, **23 fixtures determinísticas com manifest SHA-256 já existentes** |
+| Dependências runtime | **numpy ≥ 1.26 — única. Isso é um ativo de adoção e não pode ser destruído** |
+| Maturidade de repo | Construído em ~12 commits no mesmo dia; sem tags, sem releases, sem PyPI; `pyproject.toml` em 0.1.0 |
+
+## 2. Regras invioláveis (nenhuma implementação pode quebrá-las)
+
+| Regra | Enunciado |
+|---|---|
+| **R1** | Descritores subjetivos (centroid, BPM, tonalidade, timbre→gênero) **nunca** causam falha automática — apenas `observation`/`needs_review` |
+| **R2** | **Sem referência, sem métrica full-reference** — proxies são explícitos e rotulados |
+| **R4** | ML **sempre opt-in** (cartridge/extra) — nada de modelo bundled no core |
+| **R8** | **Nunca concluir autenticidade** — deepfake/ENF/similares terminam sempre em `needs_review` |
+
+**Contrato estrutural imutável:** modelo de 6 status (`PASS / WARNING / FAIL / NEEDS_REVIEW / NOT_APPLICABLE / INDETERMINATE`) + exit codes (`0/1/2/3/64`). Toda funcionalidade nova é adaptada a este modelo — não se introduz `pass/fail` binário.
+
+## 3. Política de dependências (não-negociável)
+
+- **Runtime core:** apenas numpy. Qualquer capacidade que exija outra lib (pystoi, pesq, librosa, sklearn, torch, ffmpeg) entra como:
+  - **extra opcional** (`audio-suite[stoi]`, `[pesq]`, `[visqol]`, `[ai-detect]`, `[listening]`), com degradação elegante e testada quando o extra não está instalado; **ou**
+  - **cartridge externo** (opt-in);
+  - **ou geração offline de fixtures** no `gen_fixtures.py` (deps de dev aceitáveis apenas aí — ex.: time-stretch/pitch-shift dos metamórficos).
+- Se houver caminho numpy puro (DRn, DC offset, quantização, reversal, ruído), **é o caminho obrigatório**.
+
+---
+
+# PARTE II — BACKLOG MESTRE (13 categorias)
+
+Formato de cada item: **ID · melhoria · prioridade · bateria de testes**. Prioridades: P0 (bloqueia adoção/risco) → P3 (desejável).
+
+## CAT-1 · GOV — Governança e higiene
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| GOV-01 | Adicionar `LICENSE` na raiz (R4 indica MIT no pyproject — alinhar) | P0 | — |
+| GOV-02 | **Passo zero da onda 0:** remover `.env` versionado; limpar histórico com `git filter-repo`/BFG (viável agora: 12 commits, zero tags/clones — ficará impraticável após o primeiro release); criar `.env.example`; revisar `.gitignore` | P0 | Executar **antes** de DIST-01 (tag) |
+| GOV-03 | Remover diretório `download/` de rascunho | P0 | — |
+| GOV-04 | Restaurar `CONTRIBUTING.md`, `CODEOWNERS`, `docs/` (existiam no beta v0.2.0, sumiram na reescrita — recuperar do histórico git) + **criar `SECURITY.md`** (disclosure responsável: obrigatório para ferramenta que se vende por chain-of-custody) + `CODE_OF_CONDUCT.md` | P0 | — |
+| GOV-05 | Branch protection no main (PRs + checks obrigatórios) | P0 | Config de repo |
+| GOV-06 | Resolver drift de versão (pyproject 0.1.0 vs. histórico v0.2.0-beta): seguir pyproject + semver + `CHANGELOG.md` | P1 | — |
+| GOV-07 | Restaurar workflow `consumer-example.yml` (citado no histórico, sumiu de `.github/workflows`) — repo consumidor de exemplo rodando a Action com SARIF no Code Scanning | P1 | — |
+| GOV-08 | Badges no README (CI, cobertura, licença, PyPI) | P1 | Depende de DIST-02 |
+| GOV-09 | README reposicionado para *"evidence-grade audio QC: deterministic, signed, standards-verified"* | P1 | — |
+| GOV-10 | Institucionalizar proteção contra perda silenciosa em merges (`analyzers/__init__.py` já perdeu 4 imports uma vez) | P1 | Via TEST-11 |
+
+**🧪 Bateria:** `tests/architecture/test_repo_hygiene.py` (LICENSE presente; sem `.env`/`download/` versionados; CONTRIBUTING/SECURITY/CODEOWNERS/docs presentes; workflows esperados; versão pyproject consistente; CHANGELOG existe) · `tests/architecture/test_analyzer_registry.py` (todos os 35 analyzers exportados e registrados) · `tests/architecture/test_ci_config.py` (action.yml referências válidas; Dockerfile non-root).
+
+## CAT-2 · DIST — Distribuição
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| DIST-01 | Tag `v0.1.0` + GitHub Release com changelog + wheel/sdist | P0 | Depois de GOV-02 |
+| DIST-02 | Publicar no PyPI; remover `--skip-editable` do pip-audit; `pip install` funcional | P0 | — |
+| DIST-03 | SBOM (CycloneDX) + provenance SLSA + sigstore nos releases | P2 | Coerente com a narrativa de cadeia de custódia |
+| DIST-04 | Publicar imagem Docker (ghcr) com tag de versão | P2 | Verificar se já existe push |
+| DIST-05 | Link/badge do relatório de conformidade no README | P1 | Depende de CONF-04 |
+
+**🧪 Bateria:** `tests/packaging/test_build_install.py` (build; instalar em venv limpo; smoke `audio-suite --version` + análise de fixture) · `tests/e2e/test_consumer_pypi.py` (instalar do TestPyPI em repo-exemplo → executar → exit codes) · job de CI verificando SBOM/attestation.
+
+## CAT-3 · CONF — Conformidade metrológica (multiplicador de credibilidade)
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| CONF-01 | Upgrade loudness BS.1770-4 → **BS.1770-5** (11/2023) | P1 | Manter vetores do −4 como regressão |
+| CONF-02 | Suite de conformance com **EBU loudness test set** (Tech 3341/3342, ~70 arquivos) + EBU SQAM: integrated/LRA/true peak dentro de **±0,1 LU** | P1 | Job de CI baixa e **cacheia** fixtures (decisão pendente — §10) |
+| CONF-03 | Matriz de validação cruzada: integrated + true peak vs. **libebur128, pyloudnorm, ffmpeg ebur128 e sox** em corpus multiformato; **tabela de desvios publicada no README** | P1 | É a prova de acurácia que sustenta o posicionamento |
+| CONF-04 | Job de CI `conformance` separado publicando relatório de conformidade **assinável** (reusa infra de assinatura) | P1 | — |
+| CONF-05 | Golden vectors de conformidade versionados com manifest sha256 | P1 | Reutilizar `gen_fixtures.py` |
+| CONF-06 | Benchmark do deepfake vs. **ASVspoof 5 / In-the-Wild** (EER/min-tDCF documentado), mantendo `needs_review` | P2 | Documentar mesmo com EER modesto |
+| CONF-07 | STOI/ESTOI real via **pystoi** quando há referência (extra `[stoi]`); manter proxy atual sem referência (R2) + **PESQ P.862 como extra `[pesq]`** (resample 16 kHz documentado) | P2 | Fallback sem extra testado |
+| CONF-08 | Fingerprint compatível **Chromaprint/AcoustID** além do hash proprietário | P2 | — |
+| CONF-09 | **ViSQOL v3** como analyzer opcional full-reference (MOS-LQO 1–5) | P3 | — |
+
+**🧪 Bateria:** `tests/conformance/test_ebu_loudness.py` (parametrizado pelo test set, ±0,1 LU, skip gracioso sem fixtures) · `test_true_peak.py`, `test_lra.py` · `tests/crosscheck/test_oracle_matrix.py` (deps de teste + subprocess ffmpeg; gera tabela como artefato) · job publica relatório assinado · `tests/benchmarks/deepfake/test_asvspoof_eer.py` (noturno, não gate) · `tests/unit/test_stoi_fallback.py` e `test_pesq_fallback.py` (com/sem extra).
+
+## CAT-4 · PROF — Perfis de delivery
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| PROF-01 | `broadcast` — EBU R128 v5: −23 LUFS ±0,5 (±1 ao vivo), teto −1 dBTP | P1 | — |
+| PROF-02 | **Dois perfis** (conflito entre analistas resolvido): `streaming-music` (−14 LUFS) e `broadcast-streaming` (R128 s2: −18 interim/−16 música, PLR ≤ 15 dB), diferença documentada | P1 | — |
+| PROF-03 | `podcast` (−16 LUFS estéreo / −19 mono) | P1 | — |
+| PROF-04 | `atsc-a85` (−24 LKFS) | P2 | — |
+| PROF-05 | `cine` (R128 s4) | P2 | — |
+| PROF-06 | Perfis de caso de uso: `voice-ai`, `music-master`, `forensic-triage`, `call-center` | P2 | `music-master` recebe `dr_min_db` (ENG-12) |
+| PROF-07 | Comando `audio-suite compliance --target ebu\|spotify\|podcast` gerando **delivery-matrix** por plataforma | P1 | — |
+| PROF-08 | *(estrutural)* Descritores nunca viram falha automática em nenhum perfil — verificado por teste | — | — |
+| PROF-09 | **Gates de saneamento no profile:** `require_signal_present`, `min_duration_s`, `sample_rate_hz` (mismatch → finding com status/severidade correta) | P1 | Fixtures de silêncio total/parcial |
+| PROF-10 | **Regras compostas de policy** (referências entre analyzers com escalonamento, ex.: LRA<6 LU + onset_rate alto → WARNING; DRn<8 confirma → FAIL) | P2 | **Guardas obrigatórias:** (a) só métricas objetivas podem participar — teste estrutural do schema de policy (R1); (b) `rule_id` próprio estável (`AS-COMP-001`); (c) `calibration_status: heuristic` até passar por LIST-03; (d) thresholds calibrados, não arbitrários |
+
+**🧪 Bateria:** `tests/unit/policy/test_profile_*.py` (cada perfil carrega, valida, alvos corretos ±0,1 LU) · `tests/contracts/test_profile_catalog.py` (catálogo estável, compatível com lockfile) · `tests/integration/test_compliance_command.py` (delivery-matrix com fixtures calibradas) · metamórfico (arquivo no alvo → sem FAIL; −10 LUFS → FAIL em broadcast) · `tests/golden/test_delivery_matrix.py` · `tests/unit/policy/test_composite_rules.py` (combinações, escalonamento, guarda R1).
+
+## CAT-5 · CONTR — Contrato versionado de saída
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| CONTR-01 | **JSON Schema v1** versionado dos resultados, publicado como URN resolvível; compat retroativa garantida | P0 | Não migrar para pydantic — base é dataclasses imutáveis (CT-06) |
+| CONTR-02 | **IDs de regras estáveis** (`AS-LOUD-001`, `AS-CLIP-001`, `AS-CHAN-001`…) | P0 | — |
+| CONTR-03 | Taxonomia `info/warning/error/critical` + política explícita de exit codes (manter 0/1/2/3/64) | P0 | — |
+| CONTR-04 | Campos de **remediação** em todo finding: `recommendation`, `why_it_matters`, `evidence`, `autofix.available` | P1 | — |
+| CONTR-05 | Campos de **incerteza científica** nos classificatórios: `confidence`, `evidence_strength`, `method_version`, `limitations`, `calibration_status`, `requires_human_review` | P1 | Alinha com R8 (regra) |
+| CONTR-06 | **Redação obrigatória** de frases probabilísticas — nunca "é deepfake" | P1 | — |
+| CONTR-07 | Scorecard agregado opcional, sem ocultar achados individuais | P2 | — |
+| CONTR-08 | **Contrato anti-falha-silenciosa:** todo `status=error` exige `error_type` + `error_message`; validação de integridade rejeita bundle violando | P1 | Validado do R8 |
+
+**🧪 Bateria:** `tests/contracts/test_schema_v1.py` (toda saída de toda fixture valida contra o schema) · `test_rule_ids.py` (snapshot) · `test_severity_exit_codes.py` (matriz) · `test_remediation_fields.py` (todo `error/critical` tem `recommendation`) · `test_uncertainty_fields.py` · `tests/property/test_no_authenticity_claim.py` (deepfake/ENF nunca emitem conclusão) · `tests/property/test_schema_backcompat.py` · **`tests/contracts/test_no_silent_failures.py`** (injetar exceção simulada em cada analyzer; bundle resultante tem `error_type`+`error_message` e integrity rejeita bundle sem).
+
+## CAT-6 · ENG — Engine, formatos, API
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| ENG-01 | **Timeout por analyzer** (existia no beta "O2", sumiu na reescrita) — analyzer travado não congela o run (CT-13) | P0 | — |
+| ENG-01.r | **Attack-time profile** como extensão do analyzer `transient` existente (não analyzer novo) | P2 | Fixtures kick/snare com ataque conhecido + tolerância |
+| ENG-02 | Processamento em stream/blocos para arquivos grandes (provar com 180 min) | P1 | — |
+| ENG-03 | Batch/glob no `analyze` + modo watch-folder | P2 | — |
+| ENG-04 | Saída **JSON Lines** | P2 | — |
+| ENG-05 | **API Python estável documentada** (motor importável sem CLI) | P2 | — |
+| ENG-06 | Formalizar **API de plugins/cartridge**: metadados, entrada normalizada, saída obrigatória (findings/evidência/confiança/custo), versionamento de API, isolamento de falha, plugins comerciais | P2 | — |
+| ENG-07 | Ampliar leitura de formatos comprimidos — confirmar matriz real do `decode` (soundfile + fallback ffmpeg) | P1 | — |
+| ENG-08 | Metadados **BWF/BEXT/iXML** (broadcast/arquivo) | P2 | — |
+| ENG-09 | **P.56 active speech level + detector dedicado de silêncio** (total/parcial, threshold configurável no profile) + VO para QC de dubbing | P3 | Absorve o "silence detector" do R8; DC offset já no corpus |
+| ENG-10 | Relatório HTML com gráficos: **timeline de loudness** (momentary/short-term/max) + **goniometer plot** (hoje só estatísticas); manter WCAG | P2 | — |
+| ENG-11 | Cartridges de modelos antifalsificação externos (estilo ASVspoof), opt-in | P3 | — |
+| ENG-11.r | Citar **DNSMOS/NISQA** como candidatos a cartridge no-reference para `voice-ai` (opt-in, `requires_human_review: true`) | P3 | Nunca analyzer core |
+| ENG-12 | **DRn meter (DR4/DR6/DR14)**, metodologia documentada no bundle, **numpy puro**; parâmetro `dr_min_db` no perfil `music-master` (não no broadcast — DR mínimo não é padrão EBU) | P2 | Validado do R8 |
+
+**🧪 Bateria:** `tests/unit/engine/test_timeout.py` (sleep infinito → run completa, status apropriado, sem processos órfãos) · `test_isolation.py` · `tests/integration/formats/test_matrix.py` (WAV/FLAC/MP3/OGG/MP4 × 1/2/6/8 canais) · `tests/performance/test_large_file_streaming.py` (180 min no orçamento de memória) · `tests/unit/cli/test_batch_watch.py` · `tests/unit/output/test_jsonl.py` · `tests/contracts/test_plugin_api.py` (cartridge-exemplo; falha isolada; versão incompatível rejeitada) · `tests/unit/metadata/test_bwf_bext.py` · `tests/integration/test_html_report.py` · `tests/golden/test_drn.py` (kick vs. smashed com DR esperado) + metamórfico (compressão extrema reduz DRn monotonicamente) + `tests/unit/test_drn_pure_numpy.py` · `tests/unit/transient/test_attack_time.py`.
+
+## CAT-7 · CORP — Corpus de referência
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| CORP-01 | Corpus versionado por categorias: sintéticos determinísticos (senoide, sweep log, ruído branco/rosa, impulsos, silêncio, DC offset, fase controlada); defeitos injetados (clipping, dropout, **jitter** ✓já previsto, clicks, gaps, artefatos de codec, inversão de polaridade); voz (limpa, rápida/lenta, baixa SNR, multi-locutor, TTS); canais (mono/estéreo/dual mono/invertido/5.1/mapeamentos inválidos/downmix); contêineres válidos/truncados/inconsistentes; privacidade (PII em metadados); evidência (hash/manifest/assinatura conhecidos); **novo:** fixtures de header-mismatch de sample rate (o suite deve não crashar e reportar propriedades declaradas) e de bit-depth (24→16→12→8) | P0 | **Começa de 23 fixtures existentes** |
+| CORP-02 | **Manifest YAML por fixture** (`id`, `source`, `sample_rate_hz`, `channels`, `duration_s`, `expected`, `tolerances`) com sha256 | P0 | — |
+| CORP-03 | Expandir para **40–60 fixtures** cobrindo loudness, LRA, true peak, clipping, canais, metadados, resampling, glitches | P0 | — |
+| CORP-04 | **Golden-file regression por analyzer** (saída esperada + tolerância explícita) | P1 | — |
+| CORP-05 | **Testes metamórficos** (família original): duplicação temporal, swap L/R, ganho −6 dB, estéreo idêntico→mono, padding de silêncio, roundtrip lossy | P1 | — |
+| CORP-05.r | **Extensão metamórfica** (validada do R9): **time-stretch ±10%** (timbrais estáveis, onset_rate proporcional — geração offline); **pitch-shift ±3 st** (centroid translada, loudness estável — offline); **reversal** (loudness invariante, onsets espelhados, phase muda — ⚠️ `spectral_flux` é direcional: invariância especificada por analyzer); **SNR ladder 40/30/20 dB** (flatness ↑ monotônico, STOI/PESQ ↓ monotônico); **bit-depth starvation** (harmonic_tension/spectral_irregularity ↑ monotônico); **padrão "sweep characterization"** (varredura paramétrica, ex.: DC 0→0,99 → snapshot do perfil de resposta por analyzer como baseline de regressão, reutilizável) | P1 | Numpy puro em-teste; transformações com lib → geração offline no `gen_fixtures.py` |
+| CORP-06 | Expansão de **property tests** (hypothesis): invariância de permutação de canais, energia, linearidade espectral | P1 | — |
+| CORP-07 | **Calibração fingerprint humano vs. clone** (pareado original vs. TTS) — ⚠️ **caveat:** o fingerprint é hash de identidade, não embedding perceptual; se a separação falhar, o desfecho correto é **documentar a limitação**, não forçar o analyzer | P3 | — |
+
+**🧪 Bateria:** `tests/golden/test_<analyzer>_golden.py` (parametrizados pelo manifest) · `tests/metamorphic/test_*.py` (7 originais + extensões) · `tests/property/` (expandido) · `scripts/gen_fixtures.py` estendido (corpus + manifest + sha256 + transformações offline).
+
+## CAT-8 · TEST — Camadas de teste e gates de CI
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| TEST-01 | Preencher esqueletos: `tests/e2e`, `tests/fuzz`, `tests/performance`, `tests/integration/{cli,evidence,formats,github_action}` | P0 | — |
+| TEST-02 | **E2E:** CLI → perfil → JSON/HTML/SARIF → exit codes; CLI → bundle assinado → verify; Docker roda análise; Action em repo fixture com SARIF no Code Scanning | P0 | — |
+| TEST-03 | **Fuzz do decoder:** WAV truncado, headers malformados, durações mentirosas, zip bombs, NaN/Inf, metadados gigantes; **Hypothesis nos property tests + Atheris (coverage-guided) no job noturno** | P1 | — |
+| TEST-04 | Fuzz de **profiles YAML** (hypothesis) | P1 | — |
+| TEST-05 | **Benchmarks com orçamento** (pytest-benchmark): s de áudio/s de CPU por analyzer, memória de pico, arquivos 1/10/60/180 min, ex.: loudness ≥ 50× realtime; **gate de regressão no CI**; resultados publicados no README | P1 | — |
+| TEST-06 | **Mutation testing** (mutmut) em loudness, truepeak, policy, signing, audit, serialização | P2 | Noturno |
+| TEST-07 | **Determinismo** em matriz OS × Python + **reprodutibilidade de bundle: idêntico exceto campos declarados não-determinísticos** (lista canônica versionada — timestamps etc.) — ⚠️ "bit-for-bit" está incorreto como especificação e foi corrigido | P2 | — |
+| TEST-08 | Verificação **WCAG** do HTML com axe-core no CI | P2 | — |
+| TEST-09 | **Gates de CI em 3 camadas** — PR: lint, unit, contract, golden baratos, cobertura incremental nos arquivos alterados, smoke CLI, gerar+validar JSON/SARIF. main: matriz 3.11–3.13, integração codecs, container build+run, Action em repo fixture, HTML, publicar cobertura+benchmarks. Noturno/semanal: fuzz com orçamento de tempo, corpus completo, benchmarks, mutation, arquivos grandes multicanal, deps + security scanning | P1 | — |
+| TEST-10 | **mypy bloqueante** (remover `\|\| true`), **gate cobertura 80%** (pode ir direto: 86% declarado), pip-audit sem `--skip-editable` pós-PyPI | P0 | — |
+| TEST-11 | **Teste de arquitetura:** arquivos esperados presentes (LICENSE, workflows, docs); registry completo — proteção contra perda silenciosa em merges | P1 | Implementado em CAT-1 |
+| TEST-12 | Equivalente Python de "sanitizers": ruff strict, bandit, pip-audit, mypy strict nos módulos críticos | P1 | — |
+
+**🧪 Bateria (arquivos a criar):** `tests/e2e/{test_cli_end_to_end,test_evidence_flow,test_docker_run,test_action_workflow}.py` · `tests/fuzz/{test_decode_fuzz,test_policy_fuzz}.py` · `tests/performance/test_budgets.py` (baseline versionado + gate) · `tests/architecture/test_expected_files.py` · `tests/property/test_bundle_reproducibility.py` (N execuções → idênticos exceto campos não-determinísticos declarados) · `.github/workflows/{ci.yml,ci-main.yml,nightly.yml}`.
+
+## CAT-9 · EVID — Evidência e reprodutibilidade
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| EVID-01 | Comando `audio-suite inspect <arquivo> --profile forensic-triage --bundle evidence.asb --sign-key key.pem` | P1 | — |
+| EVID-02 | Bundle expandido: hash do original, versão do motor, ambiente, perfil, parâmetros, timestamps, logs, assinatura | P1 | — |
+| EVID-02.r | **Provenance:** `analyzer_version` por analyzer **no bundle de saída** + snapshot das dependências resolvidas na execução | P2 | Validado do R9 |
+| EVID-03 | Métrica de **reprodutibilidade**: % de execuções com bundle verificável, publicada por release | P2 | — |
+| EVID-04 | Fixtures e testes de **privacidade**: PII (e-mail, telefone, IDs) em metadados detectada/redigida | P1 | — |
+| EVID-05 | JSON Schema do bundle como URN resolvível no site de docs | P2 | — |
+
+**🧪 Bateria:** `tests/integration/evidence/test_full_chain.py` (analyze → bundle → verify → tamper 1 byte → verificação falha) · `tests/unit/security/test_signature_determinism.py` · `test_audit_hashchain.py` (+ self-check) · `tests/property/test_bundle_reproducibility.py` · `tests/security/test_pii_redaction.py`.
+
+## CAT-10 · DOCS — Documentação
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| DOCS-01 | Site **MkDocs Material** + API (Sphinx) + JSON Schemas como URN + **catálogo navegável dos 35 analyzers + guia de autoria de profiles YAML** (hoje só `strict.yaml` existe como exemplo) | P1 | — |
+| DOCS-02 | **Garantias e limitações por analyzer** — **gerada/validada a partir dos contratos `DEFAULT_LIMITATIONS`** (teste de sincronização) + limitação documentada: "sample rate verdadeiro é indetectável sem referência" (Rule 2) | P1 | — |
+| DOCS-03 | Arquitetura, **modelo de ameaça**, política de versões/compatibilidade | P2 | — |
+| DOCS-04 | Exemplos completos de CI: podcast, transcodificação, TTS, evidência | P2 | — |
+| DOCS-05 | Tutoriais por segmento (podcast/vídeo, IA de voz, forense, engenharia de mídia) | P3 | — |
+
+**🧪 Bateria:** `tests/docs/test_analyzer_docs.py` (cada analyzer tem entrada) · **`tests/docs/test_limitations_sync.py`** (doc ≡ contrato do analyzer — nunca divergem) · job de link checker · `tests/docs/test_readme_examples.py` (comandos do README executáveis).
+
+## CAT-12 · LIST — Listening Test Harness (validado do R8)
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| LIST-01 | **ABX/Forced-Choice CLI:** subcomando `audio-suite listen` (CLI-first; web só em backlog), randomização com seed reproduzível, estatística binomial (p-value), escala de confiança 1–5. É **modo de sessão**, não analyzer | P2 | — |
+| LIST-02 | **Protocolo commit/reveal:** bundle da sessão cega assinado **sem** o gabarito; gabarito hasheado (commit) antes do teste; bundle de revelação assinado depois. Seed e ground-truth nunca no mesmo bundle pré-revelação | P2 | Padrão de evidência alinhado ao ethos forense |
+| LIST-03 | **Pipeline de calibração:** resultados de escuta alimentam `calibration_status`/`confidence` dos classificatórios (fecha o ciclo com CONTR-05) e validam thresholds de regras compostas (PROF-10) | P3 | — |
+| LIST-04 | Anonimização obrigatória do avaliador (`anon_id`) via `security/pii.py`; coleta humana sempre opt-in | P2 | — |
+
+**🧪 Bateria:** unit (shuffle determinístico por seed; binomial; schema do bundle de sessão) · security (bundle sem identidade real; seed ausente do bundle cego) · e2e (sessão completa → commit → reveal → verificação das duas assinaturas) · property (revelação impossível antes do reveal bundle).
+
+## CAT-13 · CONS — Consistência interna entre analyzers (validado do R9)
+
+| ID | Melhoria | Prio | Notas |
+|---|---|---|---|
+| CONS-01 | **Matriz de correlação** entre pares de analyzers de dimensões correlacionadas (`transient`×`spectral_health`, `phase`×`spatial_coherence`, `lra`×DRn), baseline versionado, alerta de divergência além da banda | P3 | Camada `tests/consistency/`. ⚠️ Limitações registradas: detecta *divergência*, não *erro* (bugs compartilhados permanecem invisíveis) — complementa CONF-02/CORP-04, nunca substitui |
+| CONS-02 | **Continuidade temporal:** métricas em janelas deslizantes em arquivos longos; saltos anômalos viram suspeita de bug **no teste** (nunca finding no produto — `glitch` já cobre o produto); cross-check com `acoustic_context` para não falsear com edições legítimas | P3 | — |
+
+**🧪 Bateria:** `tests/consistency/test_correlation_matrix.py` (baseline em corpus conhecido, bandas de tolerância) · `test_temporal_continuity.py`.
+
+## CAT-11 · BACKLOG — Agendado / descartado
+
+| ID | Item | Status |
+|---|---|---|
+| BACKLOG-01 | ViSQOL v3 | ≡ CONF-09, agendado |
+| BACKLOG-02 | ADM/BWF completo, Atmos | Após ENG-08 |
+| BACKLOG-03 | Dashboard/SaaS | Reavaliar pós-Onda 4 |
+| BACKLOG-04 | Benchmark público comparativo (iZotope RX / Auphonic / Dolby) | **Gate:** só após Ondas 0–2 prontas — publicar antes da conformance expõe lacunas |
+| BACKLOG-05 | Repositório de perfis assinados da comunidade | Após ENG-06 |
+| BACKLOG-06 | Itens R3 (VST3/AU/AAX, tempo real/lock-free, oversampling, pitch-shift runtime, GUI) | **Descartado formalmente** — CLI de análise, não DAW/plugin; registrar justificativa |
+| BACKLOG-07 | Detecção de pre/post-ringing e aliasing de clipping | — |
+| BACKLOG-08 | PEAQ BS.1387 | Junto de BACKLOG-01 |
+| BACKLOG-09 | Web ABX panel | Após LIST-01/02 maduros |
+| BACKLOG-10 | Adversarial perturbation (FGSM) | Research-grade, torch-only |
+| BACKLOG-11 | Detecção automática de SR drift | Sem referência é subdeterminado; exceção: hum de rede 50/60 Hz como referência absoluta → sinergia futura com `enf_phase` |
+| BACKLOG-12 | Genre-timbre mismatch (N-24) | Redesenhado condicionado: só como `needs_review` opt-in com corpus de referência; exige nova decisão antes de implementar |
+
+---
+
+# PARTE III — EXECUÇÃO
+
+## 4. Ondas de implementação
+
+| Onda | Escopo (IDs) | Critério de done |
+|---|---|---|
+| **0 — Higiene** (1–2 dias) | **Ordem obrigatória: GOV-02 (histórico) → GOV-01/03/04/05, TEST-10, GOV-06, DIST-01, DIST-02** | Testes de arquitetura/higiene verdes; `pip install` funciona; mypy bloqueante; tag criada |
+| **1 — Confiança no núcleo** (2 sem) | CONTR-01, 02, 03 · CORP-01, 02, 03 · ENG-01 · TEST-01, 02, 11 | Schema v1 publicado; 40–60 fixtures com manifests; e2e CLI/Docker/Action; timeout por analyzer |
+| **2 — Conformidade** (2 sem) | CONF-01, 02, 03, 04, 05 · PROF-01, 02, 03, 07, 09 · TEST-05, 09 · gate cobertura 80% | Tabela de desvios no README; relatório de conformidade assinado no CI; perfis broadcast/streaming/podcast |
+| **3 — Robustez** (2 sem) | TEST-03, 04, 06, 07, 08, 12 · CORP-04, 05, 06 · ENG-02, 07 · CONTR-08 | Fuzz noturno rodando; benchmarks com gate; metamórficos verdes; contrato anti-falha-silenciosa |
+| **4 — Produto acionável** (2 sem) | CONTR-04, 05, 06, 07 · EVID-01, 02, 02.r, 04 · ENG-03, 04, 06, 08, 10, 12, 01.r · DOCS-01, 02 · DIST-03 · GOV-07, 08, 09, 10 · PROF-10 · CORP-05.r (famílias numpy-puras: reversal, SNR ladder, bit-depth, DC sweep) · início LIST-01/02 | Remediação + incerteza nos findings; bundle verificável e2e; plugin API; docs site; regras compostas com guardas |
+| **5 — Autoridade** (contínuo) | CONS-01, 02 · CORP-05.r (time-stretch, pitch-shift offline) · CORP-07 · LIST-03, 04 · ENG-09, 11, 11.r · PROF-04, 05, 06 · DOCS-03, 04, 05 · CONF-06, 07, 08 · EVID-03, 05 · DIST-04, 05 | Benchmark ASVspoof documentado; CONS com baseline; exemplos de CI por segmento |
+| **Backlog** | CONF-09, BACKLOG-01…12 | Condicionado a gates próprios |
+
+## 5. Definição global de "done" (todos os itens)
+
+✅ Implementado + bateria de testes da categoria passando + CI verde + cobertura não regrediu + **nenhuma Rule (R1/R2/R4/R8) violada** + contrato de saída retrocompatível + modelo de 6 status respeitado + numpy-only runtime intacto (ou extra/cartridge documentado).
+
+## 6. Métricas de maturidade por release
+
+Taxa de aprovação no corpus golden · regressões capturadas pré-release · cobertura por módulo crítico · precisão/recall dos classificatórios · s de áudio/s de CPU e memória de pico · % de bundles verificáveis · % de findings com remediação · breaking changes de schema (alvo: 0).
+
+## 7. Pendências de decisão (levantar antes da onda indicada)
+
+| # | Decisão | Onda |
+|---|---|---|
+| 1 | Onde armazenar/**cacheia** as fixtures da EBU (test set ~70 arquivos + SQAM) no CI | Antes da 2 |
+| 2 | Confirmação da licença (MIT vs. Apache-2.0) | Antes da 0 |
+| 3 | Conteúdo dos **anexos 1 e 2** (chegaram vazios três vezes — seguem pendentes de integração) | Antes da 2 |
+
+---
+
+# PARTE IV — REGISTRO DE VALIDAÇÃO (auditoria do compilador)
+
+## 8. Fontes e confiabilidade
+
+| Fonte | Base | Confiabilidade |
+|---|---|---|
+| R1, R2, R4, R7 | Leitura real do repositório | Alta |
+| R3 | Análise genérica **sem acesso ao repo** | Baixa — itens descartados |
+| R8, R9 | Planos de analistas externos sem conhecimento do estado real | Mista — triados item a item |
+
+## 9. Conflitos entre analistas — resoluções aplicadas
+
+| Tema | Resolução |
+|---|---|
+| Versão do 1º release (R1: v0.3.0 · R4: v0.1.0) | Seguir `pyproject.toml` (0.1.0) + semver + CHANGELOG |
+| Alvo streaming (R128 s2 vs. −14 LUFS) | **Dois perfis** distintos, documentados (PROF-02) |
+| BS.1770-4 vs. -5 | Upgrade para −5; vetores do −4 mantidos como regressão |
+| Gate de cobertura (70% vs. 80%) | 80% direto (86% declarado) — Onda 0 |
+| Itens R3 | Descarte formal com justificativa (BACKLOG-06) |
+
+## 10. Itens rejeitados durante a triagem (com justificativa — não reimplementar)
+
+| Item rejeitado | Motivo |
+|---|---|
+| HMAC seal no bundle (R9/N-19) | Ed25519 já existe e é superior: verificação **pública** por terceiros sem chave compartilhada — requisito de cadeia de custódia |
+| Genre-timbre mismatch como WARNING (R9/N-24) | Viola R1 — inferência semântica/cultural |
+| "Bit-for-bit" como especificação de determinismo (R9/N-18) | Bundles contêm timestamps; correto é "idêntico exceto campos declarados não-determinísticos" |
+| Golden master "blind shuffle" (R8) | Métricas determinísticas não têm viés; embaralhamento só vale para avaliador humano (= LIST) |
+| Metadata blind test (R8) | Sem caso de uso; `metadata_schema_validator` + `inspect` cobrem |
+| "LSQ" como métrica (R8) | Não existe na literatura |
+| Reestruturação de pacotes, Dockerfile/Action "novos", matriz "antes/depois" (R8) | Baseadas em premissas falsas — tudo já existe |
+| pydantic para gerar schema (R8) | Conflita com dataclasses imutáveis (CT-06); CONTR-01 já prevê schema versionado |
+| librosa/pesq/sklearn/sox/Flask no caminho principal (R8/R9) | Destruiria numpy-only runtime; política de extras/cartridge obriga |
+| Web ABX panel na fase 2 (R8) | Cedo demais — BACKLOG-09 |
+| Todos os itens R3 (VST3, tempo real, GUI, oversampling, pitch-shift runtime) | Escopo: CLI de análise, não DAW/plugin (BACKLOG-06) |
+
+## 11. Registro de acréscimos por fonte (rastreabilidade)
+
+- **R1–R4:** estrutura base do backlog (11 categorias originais).
+- **R7:** limpeza de histórico git como passo zero (GOV-02), SECURITY.md/CoC (GOV-04), sox como oráculo (CONF-03), Atheris (TEST-03), guia de autoria de profiles (DOCS-01), extras de pip (política de dependências), gate de timing do benchmark público (BACKLOG-04), confirmação de 23 fixtures existentes e numpy-only.
+- **R8:** CAT-12 LIST (commit/reveal), ENG-12 (DRn), ENG-01.r (attack time), CONTR-08 (anti-falha-silenciosa), PROF-09 (gates de saneamento), CONF-07/PESQ, ENG-11.r (DNSMOS/NISQA), BACKLOG-07/08/09.
+- **R9:** CAT-13 CONS, PROF-10 (regras compostas com guardas), CORP-05.r (5 famílias metamórficas + sweep characterization), CORP-01.r (SR-mismatch/bit-depth fixtures), CORP-07 (calibração fingerprint), EVID-02.r (provenance), BACKLOG-10/11/12.
+
+---
+
+**Fim do documento.** O agente inicia pela Onda 0 com a ordem interna obrigatória (GOV-02 → demais → tag), marcando o status de cada ID no primeiro commit de auditoria. Este documento é a única fonte de verdade — sugestões futuras passam pelo mesmo protocolo de triagem (§10) antes de ganhar ID.

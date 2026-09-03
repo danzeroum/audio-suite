@@ -29,7 +29,8 @@ jobs:
       - name: Ruff format check
         run: ruff format --check audio_suite tests
       - name: Mypy type check
-        run: mypy audio_suite --ignore-missing-imports || true
+        # numpy stubs have Python 3.12+ syntax that breaks mypy in CI
+        run: mypy audio_suite --ignore-missing-imports --exclude numpy || true
       - name: pip-audit
         # Note: --strict is dropped because audio-suite itself is not yet on PyPI
         # (pip-audit cannot audit the local package and treats it as an error in strict mode).
@@ -59,7 +60,8 @@ jobs:
       - name: Generate fixtures
         run: python scripts/gen_fixtures.py
       - name: Run unit tests
-        run: pytest tests/unit tests/property -v --cov=audio_suite --cov-report=xml --cov-report=term
+        # Exclude fuzz tests (scipy/numpy recursion on CI) and performance (slow)
+        run: pytest tests/unit tests/property tests/architecture tests/contracts tests/e2e tests/conformance tests/metamorphic -v --cov=audio_suite --cov-report=xml --cov-report=term --ignore=tests/fuzz --ignore=tests/performance
       - name: Upload coverage
         if: matrix.python-version == '3.12'
         uses: codecov/codecov-action@v4
@@ -87,7 +89,7 @@ jobs:
       - name: Generate fixtures
         run: python scripts/gen_fixtures.py
       - name: Run integration tests
-        run: pytest tests/integration -v
+        run: pytest tests/integration -v --ignore=tests/fuzz --ignore=tests/performance
 
   performance:
     name: Performance Baseline

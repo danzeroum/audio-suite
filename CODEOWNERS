@@ -1,0 +1,18 @@
+# CODEOWNERS
+# These users will be automatically requested for review on PRs
+
+# Default owner
+*                       @danzeroum
+
+# Core modules
+/audio_suite/engine.py  @danzeroum
+/audio_suite/policy.py  @danzeroum
+/audio_suite/bundle.py  @danzeroum
+/audio_suite/models.py  @danzeroum
+
+# Security
+/audio_suite/security/  @danzeroum
+
+# CI/CD
+/.github/               @danzeroum
+/Dockerfile             @danzeroum

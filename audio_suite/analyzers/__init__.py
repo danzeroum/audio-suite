@@ -43,6 +43,7 @@ from . import (
     codec_conf,  # noqa: E402,F401
     deepfake,  # noqa: E402,F401
     descriptors,  # noqa: E402,F401
+    drn,  # noqa: E402,F401
     enf_phase,  # noqa: E402,F401
     glitch,  # noqa: E402,F401
     goniometer,  # noqa: E402,F401
