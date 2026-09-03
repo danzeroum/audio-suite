@@ -75,6 +75,29 @@ jobs:
             detector-score.json
             detector-score.md
 
+  fuzz:
+    name: Fuzz decoder (TEST-03.r)
+    runs-on: ubuntu-latest
+    # Política: fail-open até a transição declarada em docs/adr/ADR-0003
+    # (janela 2026-09-03 → 2026-09-10; data-alvo 2026-09-14). Após a
+    # transição, remover continue-on-error para tornar bloqueante.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install system audio deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsndfile1 ffmpeg
+      - name: Install Python dependencies
+        run: pip install -e ".[dev]"
+      - name: Generate fixtures
+        run: python scripts/gen_fixtures.py
+      - name: Run fuzz suite
+        run: pytest tests/fuzz -v
+
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
