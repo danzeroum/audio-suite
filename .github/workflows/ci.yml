@@ -47,6 +47,34 @@ jobs:
       - name: No audio binary > 1 MB committed
         run: python scripts/check_no_large_binaries.py
 
+  detector-score:
+    name: Detector precision/recall (CORP-08)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install system audio deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsndfile1
+      - name: Install Python dependencies
+        run: pip install -e ".[dev]"
+      - name: Generate fixtures
+        run: python scripts/gen_fixtures.py
+      - name: Score detectors over defect corpus
+        run: |
+          python scripts/detector_score.py --json detector-score.json --md detector-score.md
+          cat detector-score.md
+      - name: Upload detector score artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: detector-score
+          path: |
+            detector-score.json
+            detector-score.md
+
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
@@ -71,7 +99,7 @@ jobs:
         run: python scripts/gen_fixtures.py
       - name: Run unit tests
         # Exclude fuzz tests (scipy/numpy recursion on CI) and performance (slow)
-        run: pytest tests/unit tests/property tests/architecture tests/contracts tests/e2e tests/conformance tests/metamorphic -v --cov=audio_suite --cov-report=xml --cov-report=term --ignore=tests/fuzz --ignore=tests/performance
+        run: pytest tests/unit tests/property tests/architecture tests/contracts tests/e2e tests/conformance tests/metamorphic tests/corpus tests/golden -v --cov=audio_suite --cov-report=xml --cov-report=term --ignore=tests/fuzz --ignore=tests/performance
       - name: Upload coverage
         if: matrix.python-version == '3.12'
         uses: codecov/codecov-action@v4
