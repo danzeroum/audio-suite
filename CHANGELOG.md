@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — GOV-12 (Onda 4)
+- **`AGENTS.md`** (handoff para agentes de IA): comandos de build/teste/lint, invariantes R1/R2/R4/R8, regra do SHA de validação e lista explícita de "nunca fazer" (port Rust sem gatilho, HMAC, fail em descritivo, binário no repo, regenerar golden sem label, RNG global, timestamps no payload determinístico, reabrir decisões arquivadas).
+
 ### Added — GOV-11 (Onda 4)
 - **`docs/adr/`** formalizado (diretório antecipado no TEST-03.r): `TEMPLATE.md` + ADR-0001 (**reservado** — proveniência de código externo, verificação GPL bloqueante, pré-condição do eixo Rust arquivado VI.2), ADR-0002 (tolerâncias empíricas ±2σ e política de regeneração do Golden Master), ADR-0003 (fuzz fail-open→fail-closed, via TEST-03.r), ADR-0004 (rejeição do HMAC, remetendo a N-19/Ed25519).
 
