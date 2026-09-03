@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — EVID-07 (Onda 4)
+- **`reproduction_command`** no bundle JSON e no SARIF: comando exato para re-executar a análise (ordem fixa de flags; `--output` incluído só quando usado). Com o `environment_hash` (EVID-02.r+), ambiente igual + comando igual → bundle byte a byte (ver EVID-08).
+
 ### Added — EVID-02.r+ (Onda 4)
 - **Snapshot de ambiente ampliado** no bundle e no SARIF (`audio_suite/environment.py`): versões (python/numpy/scipy/soundfile), plataforma, **SHA-256 do profile YAML resolvido** (com defaults dos schemas aplicados, canônico), **versão de cada analyzer**, e **`dsp_backend`** (`python` — reference implementation; campo existe para o futuro backend gated, VI.2).
 - **`environment_hash`**: SHA-256 do JSON canônico do snapshot.

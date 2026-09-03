@@ -113,12 +113,27 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     findings = run_analyzers(audio, profile, only=only, skip=skip)
 
     # 4. Build bundle (deterministic, optionally signed)
+    # EVID-07: comando exato para reproduzir esta análise
+    from .environment import build_reproduction_command
+
+    reproduction_command = build_reproduction_command(
+        source_path=args.file,
+        profile_path=str(profile_path),
+        strict=args.strict,
+        fmt=args.format,
+        output=args.output,
+        only=only,
+        skip=skip,
+        resample=args.resample,
+    )
+
     bundle = build_bundle(
         audio,
         profile,
         findings,
         sign=args.sign,
         signing_key_path=args.signing_key,
+        reproduction_command=reproduction_command,
     )
 
     # 5. Emit in requested format

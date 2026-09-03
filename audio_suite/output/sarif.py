@@ -104,9 +104,10 @@ def bundle_to_sarif(bundle: Bundle, *, output_path: str | Path | None = None) ->
                 },
                 "results": results,
                 "properties": {
-                    # EVID-02.r+: ambiente no SARIF
+                    # EVID-02.r+ / EVID-07: ambiente e reprodução no SARIF
                     "environment_hash": (b.get("environment") or {}).get("environment_hash"),
                     "dsp_backend": (b.get("environment") or {}).get("dsp_backend"),
+                    "reproduction_command": b.get("reproduction_command"),
                 },
                 "invocations": [
                     {
