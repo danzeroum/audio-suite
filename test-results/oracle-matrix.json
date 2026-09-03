@@ -1,0 +1,81 @@
+{
+  "schema": "audio-suite/oracle-matrix@1",
+  "oracles": [
+    "python (audio_suite)",
+    "mixlirous Rust (CLI)"
+  ],
+  "policy": "CONS: divergência entre oráculos é investigação, não erro automático",
+  "investigation_threshold_lu": 0.5,
+  "rows": [
+    {
+      "case": "sine_1k_-23dbfs",
+      "python_lufs": -25.793,
+      "mixlirous": {
+        "ok": true,
+        "lufs": -25.783,
+        "raw": {
+          "integrated_lufs": -25.783
+        }
+      },
+      "delta_lufs": 0.01,
+      "status": "consistent"
+    },
+    {
+      "case": "sine_1k_-18dbfs",
+      "python_lufs": -20.793,
+      "mixlirous": {
+        "ok": true,
+        "lufs": -20.783,
+        "raw": {
+          "integrated_lufs": -20.783
+        }
+      },
+      "delta_lufs": 0.01,
+      "status": "consistent"
+    },
+    {
+      "case": "sine_1k_-14dbfs",
+      "python_lufs": -16.793,
+      "mixlirous": {
+        "ok": true,
+        "lufs": -16.783,
+        "raw": {
+          "integrated_lufs": -16.783
+        }
+      },
+      "delta_lufs": 0.01,
+      "status": "consistent"
+    },
+    {
+      "case": "sine_1k_-10dbfs",
+      "python_lufs": -12.793,
+      "mixlirous": {
+        "ok": true,
+        "lufs": -12.783,
+        "raw": {
+          "integrated_lufs": -12.783
+        }
+      },
+      "delta_lufs": 0.01,
+      "status": "consistent"
+    },
+    {
+      "case": "noise_0.2",
+      "python_lufs": -10.853,
+      "mixlirous": {
+        "ok": true,
+        "lufs": -10.843,
+        "raw": {
+          "integrated_lufs": -10.843
+        }
+      },
+      "delta_lufs": 0.01,
+      "status": "consistent"
+    }
+  ],
+  "summary": {
+    "consistent": 5,
+    "needs_investigation": 0,
+    "oracle_error": 0
+  }
+}
