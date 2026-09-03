@@ -46,7 +46,7 @@ python scripts/detector_score.py               # precisão/recall por detector
 
 # Políticas
 python scripts/check_no_large_binaries.py      # anti-binários (CORP-01.r)
-python scripts/lint_rule_registry.py           # linter R1 (PROF-08.r), quando existir
+python scripts/lint_rule_registry.py           # linter R1 (PROF-08.r) — CI + .githooks/pre-commit
 ```
 
 Um PR por item, pequeno, com testes novos passando e CHANGELOG atualizado.

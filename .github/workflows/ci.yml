@@ -98,6 +98,19 @@ jobs:
       - name: Run fuzz suite
         run: pytest tests/fuzz -v
 
+  rule-registry-lint:
+    name: R1 linter — rule registry (PROF-08.r)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Lint rule registry (descriptive never fails)
+        run: python scripts/lint_rule_registry.py
+
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
