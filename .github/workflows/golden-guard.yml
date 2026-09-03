@@ -1,0 +1,48 @@
+name: Golden Master guard (CORP-04.r)
+
+on:
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  golden-master:
+    name: Golden Master suite + regen policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install system audio deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsndfile1
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Generate fixtures (CORP-01.r)
+        run: python scripts/gen_fixtures.py
+      - name: Run Golden Master suite (budget < 90 s)
+        run: pytest tests/golden -q
+      - name: Upload GM diff artifacts (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gm-diff
+          path: |
+            test-results/gm-diff/gm-diff.json
+            test-results/gm-diff/gm-diff.html
+          if-no-files-found: ignore
+      - name: Enforce golden-regen policy
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python .github/scripts/check_golden_regen.py

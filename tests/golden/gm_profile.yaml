@@ -1,0 +1,29 @@
+# Golden Master profile (CORP-04) — pinned, self-contained.
+# O GM roda APENAS os analyzers-core com os parâmetros abaixo; mudanças no
+# default_profile.yaml NÃO afetam o Golden Master (intencional: o GM congela
+# comportamento, não configuração). Qualquer mudança aqui exige golden-regen.
+name: golden-master
+version: "1.0.0"
+data_classification: internal
+
+analyzers:
+  loudness: {}
+  true_peak: {}
+  clipping: {}
+  glitch: {}
+  lra: {}
+  spectral_health: {}
+  transient: {}
+  mono_compat: {}
+  timbre_distance: {}
+  harmonic_tension: {}
+  spectral_irregularity: {}
+  inharmonicity: {}
+  fatigue_index: {}
+  rhythmic_grid_alignment: {}
+  melodic_contour: {}
+  inspect: {}
+
+retention_policy:
+  bundle_ttl_days: 365
+  redact_pii: false

@@ -1,0 +1,57 @@
+# Golden Master manifest (CORP-04 + CORP-04.r)
+#
+# - fixtures: conjunto fixo de fixtures seed-based (CORP-01.r)
+# - tolerances: POR ANALYZER/METRIC, derivadas empiricamente (±2σ do corpus
+#   de calibração) por scripts/golden_calibrate.py — NUNCA hard-code "0.05".
+#   Proveniência completa (σ por métrica, método, semente) em
+#   tests/golden/calibration.json.
+# - Regeneração: `audio-suite golden freeze` exige label `golden-regen` +
+#   justificativa no CHANGELOG (guard: .github/workflows/golden-guard.yml).
+
+schema: audio-suite/golden-master@1
+profile: tests/golden/gm_profile.yaml
+fixtures_dir: tests/fixtures/generated
+
+fixtures:
+  - sine_1k_mono.wav
+  - sine_1k_stereo.wav
+  - sine_440.wav
+  - white_noise.wav
+  - pink_noise.wav
+  - speech_like.wav
+  - clipped.wav
+  - click_500ms.wav
+  - dropout_50ms.wav
+  - loop_discontinuous.wav
+  - silence.wav
+  - short_1s.wav
+
+tolerances:
+  clipping:
+    clipped_sample_pct: 0.001
+  fatigue_index:
+    fatigue_index: 0.001
+  glitch:
+    glitch_event_count: 0.001
+  harmonic_tension:
+    harmonic_tension: 0.001
+  inharmonicity:
+    inharmonicity: 0.001
+  loudness:
+    integrated_loudness: 0.001
+  lra:
+    loudness_range: 0.001
+  mono_compat:
+    max_band_loss: 0.001
+  rhythmic_grid_alignment:
+    rhythmic_grid_alignment: 0.009
+  spectral_health:
+    spectral_centroid: 0.001
+  spectral_irregularity:
+    spectral_irregularity: 0.001
+  timbre_distance:
+    timbre_distance: 0.001
+  transient:
+    attack_time_ms: 0.001
+  true_peak:
+    true_peak: 0.001

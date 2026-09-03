@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — CORP-04 + CORP-04.r (Onda 3)
+- **Golden Master de processo**: `tests/golden/expected/<analyzer>.json` para os 10 analyzers-core (loudness, true_peak, clipping, glitch, lra, spectral, transient, mono_compat, descriptors×7, inspect) sobre 12 fixtures seed-based.
+- Tolerâncias **por analyzer** (`tolerances` no `tests/golden/manifest.yaml`), **derivadas empiricamente** (±2σ via jitter relativo de 1 ulp float32; proveniência completa em `tests/golden/calibration.json`) — nunca hard-code "0,05".
+- Comando **`audio-suite golden freeze`** (regenera esperados) e **`audio-suite golden verify`** (compara; publicações `gm-diff.json` + `gm-diff.html` legíveis).
+- Workflow **golden-guard.yml**: suíte GM no CI (< 90 s; roda em ~9 s) + bloqueio de PR que regenere golden files sem label `golden-regen` + justificativa no CHANGELOG.
+- Profile GM fixado (`tests/golden/gm_profile.yaml`) — GM congela comportamento, não configuração do default_profile.
+
+### Changed — CORP-04
+- `glitch._detect_repetition` vetorizado com **equivalência bit a bit comprovada** (teste de referência incluído): o scan O(n×L) em loop Python custava ~4,6 s por fixture de 3 s e estourava o orçamento GM; agora ~19 ms (soma deslizante de igualdades elementares). Nenhum resultado muda — o GM congela comportamento, não o algoritmo.
+
+### Evidência DoD (CORP-04)
+- Off-by-one no fator de oversampling do true peak (4→3) injetado em branch de demonstração: **rejeitado** com 4 violações legíveis (|Δ| até 0,137 dB > tol 0,001) e `gm-diff.html` gerado.
+- Suíte GM completa: 9,3 s (< 90 s).
+
 ### Added — CORP-01.r (Onda 3)
 - Geradores **seed-based** como fonte primária de todo fixture: módulo canônico `tests/fixtures/generators.py` com `FixtureSpec` + `FIXTURE_SPECS` (38 fixtures), RNG sempre `numpy.random.Generator(PCG64(seed))` local — API global (`np.random.seed`/`random.*`) proibida e verificada por teste.
 - Política **anti-binários**: `scripts/check_no_large_binaries.py` + job CI `policy-binaries` — falha se qualquer `.wav`/`.flac`/`.mp3`/… rastreado exceder 1 MB (CORP-01.r / regra 7).

@@ -234,6 +234,53 @@ def cmd_audit(args: argparse.Namespace) -> int:
         return ExitCode.OK
 
 
+def cmd_golden(args: argparse.Namespace) -> int:
+    """CORP-04/CORP-04.r: Golden Master de processo.
+
+    audio-suite golden freeze  — regenera tests/golden/expected/*.json
+    audio-suite golden verify  — compara contra os esperados; em violação,
+                                 escreve gm-diff.json + gm-diff.html e sai 1.
+    """
+    from .golden import (
+        DEFAULT_EXPECTED_DIR,
+        DEFAULT_MANIFEST,
+        freeze_expected,
+        verify_golden,
+    )
+
+    manifest = args.manifest or str(DEFAULT_MANIFEST)
+    expected_dir = args.expected_dir or str(DEFAULT_EXPECTED_DIR)
+
+    if args.action == "freeze":
+        out_dir = freeze_expected(manifest_path=manifest, expected_dir=expected_dir)
+        _print_json(
+            {
+                "action": "freeze",
+                "expected_dir": str(out_dir),
+                "note": (
+                    "golden files regenerados — o PR precisa da label 'golden-regen' "
+                    "e de justificativa no CHANGELOG (CORP-04.r)"
+                ),
+            }
+        )
+        return ExitCode.OK
+
+    violations, summary = verify_golden(
+        manifest_path=manifest,
+        expected_dir=expected_dir,
+        diff_dir=args.diff_dir,
+    )
+    payload = {
+        "action": "verify",
+        "summary": summary,
+        "violations": [v.as_row() for v in violations],
+    }
+    if args.diff_dir:
+        payload["diff_dir"] = str(args.diff_dir)
+    _print_json(payload)
+    return ExitCode.OK if not violations else ExitCode.FINDING
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="audio-suite",
@@ -280,6 +327,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_audit.add_argument("--actor", default="anonymous", help="who performed the action")
     p_audit.add_argument("--verify", action="store_true", help="verify chain integrity")
     p_audit.set_defaults(func=cmd_audit)
+
+    # golden (CORP-04/CORP-04.r)
+    p_golden = sub.add_parser("golden", help="Golden Master de processo (freeze/verify)")
+    p_golden.add_argument("action", choices=["freeze", "verify"])
+    p_golden.add_argument(
+        "--manifest", default=None, help="manifest GM (default: tests/golden/manifest.yaml)"
+    )
+    p_golden.add_argument(
+        "--expected-dir", default=None, help="diretório dos esperados (default: tests/golden/expected)"
+    )
+    p_golden.add_argument("--diff-dir", default=None, help="diretório para gm-diff artifacts no verify")
+    p_golden.set_defaults(func=cmd_golden)
 
     # compliance (PROF-07)
     p_compliance = sub.add_parser("compliance", help="check delivery compliance")

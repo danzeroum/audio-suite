@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-03",
+  "method": "±2σ empírico: K=8 cópias por fixture com jitter RELATIVO de 1 ulp float32 (x'=x·(1+u), u~U(-2^-23, 2^-23); zeros preservados — silêncio não vira ruído); σ máximo entre fixtures por (analyzer, metric); tolerância = ceil(2σ, 3 casas), piso 1e-4",
+  "schema": "audio-suite/gm-calibration@1",
+  "seed": 20260903,
+  "sigma": {
+    "clipping": {
+      "clipped_sample_pct": 0.0
+    },
+    "fatigue_index": {
+      "fatigue_index": 0.00024720661623652213
+    },
+    "glitch": {
+      "glitch_event_count": 0.0
+    },
+    "harmonic_tension": {
+      "harmonic_tension": 1.1775693440128312e-16
+    },
+    "inharmonicity": {
+      "inharmonicity": 0.0
+    },
+    "loudness": {
+      "integrated_loudness": 0.0
+    },
+    "lra": {
+      "loudness_range": 0.0
+    },
+    "mono_compat": {
+      "max_band_loss": 0.0
+    },
+    "rhythmic_grid_alignment": {
+      "rhythmic_grid_alignment": 0.004066666666666663
+    },
+    "spectral_health": {
+      "spectral_centroid": 9.646648066153113e-13
+    },
+    "spectral_irregularity": {
+      "spectral_irregularity": 0.0
+    },
+    "timbre_distance": {
+      "timbre_distance": 0.0
+    },
+    "transient": {
+      "attack_time_ms": 0.0
+    },
+    "true_peak": {
+      "true_peak": 2.3551386880256624e-16
+    }
+  },
+  "tolerances": {
+    "clipping": {
+      "clipped_sample_pct": 0.001
+    },
+    "fatigue_index": {
+      "fatigue_index": 0.001
+    },
+    "glitch": {
+      "glitch_event_count": 0.001
+    },
+    "harmonic_tension": {
+      "harmonic_tension": 0.001
+    },
+    "inharmonicity": {
+      "inharmonicity": 0.001
+    },
+    "loudness": {
+      "integrated_loudness": 0.001
+    },
+    "lra": {
+      "loudness_range": 0.001
+    },
+    "mono_compat": {
+      "max_band_loss": 0.001
+    },
+    "rhythmic_grid_alignment": {
+      "rhythmic_grid_alignment": 0.009
+    },
+    "spectral_health": {
+      "spectral_centroid": 0.001
+    },
+    "spectral_irregularity": {
+      "spectral_irregularity": 0.001
+    },
+    "timbre_distance": {
+      "timbre_distance": 0.001
+    },
+    "transient": {
+      "attack_time_ms": 0.001
+    },
+    "true_peak": {
+      "true_peak": 0.001
+    }
+  },
+  "trials": 8
+}

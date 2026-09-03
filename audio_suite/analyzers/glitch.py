@@ -176,23 +176,33 @@ class GlitchAnalyzer(AudioAnalyzer):
         """Detect blocks where a sub-block of length L is repeated immediately.
 
         Returns list of (start, repeat_length).
+
+        Equivalência exata com o scan original (CORP-04, custo O(n) por L):
+        d[i] = max|x[i:i+L] - x[i+L:i+2L]| < 1e-6 é verdadeiro se e somente se
+        TODO par elementar satisfaz |x[i+j] - x[i+L+j]| < 1e-6. Um somatório
+        deslizante (cumsum) sobre o vetor booleano de igualdades reproduz o
+        match por janela sem materializar d[i] — de ~4,6 s/fixture (loop
+        Python) para milissegundos, sem mudar nenhum resultado.
         """
         events: list[tuple[int, int]] = []
         n = len(x)
         # Scan candidate repeat lengths (powers of 2 from min_len up to 4096)
         L = min_len
         while min(4096, n // 2) >= L:
-            # Compare x[i:i+L] with x[i+L:i+2L]
-            i = 0
-            while i + 2 * L <= n:
-                a = x[i : i + L]
-                b = x[i + L : i + 2 * L]
-                # Use max abs diff as a simple metric
-                diff = float(np.max(np.abs(a - b)))
-                if diff < 1e-6:
-                    events.append((i, L))
-                    i += 2 * L
-                else:
-                    i += 1
+            n_windows = n - 2 * L + 1
+            if n_windows > 0:
+                eq = (np.abs(x[: n - L] - x[L:]) < 1e-6).astype(np.int64)
+                cum = np.concatenate(([0], np.cumsum(eq)))
+                window_true = cum[np.arange(n_windows) + L] - cum[np.arange(n_windows)]
+                match = window_true == L  # d[i] < 1e-6 para toda a janela
+                # Replay do scan original: avança 2L em match, 1 caso contrário.
+                # Equivalente a emitir cada posição de match (em ordem) que seja
+                # >= cursor (= início do último evento + 2L), O(nº de matches).
+                cursor = 0
+                for i in np.flatnonzero(match):
+                    i = int(i)
+                    if i >= cursor:
+                        events.append((i, L))
+                        cursor = i + 2 * L
             L *= 2
         return events
