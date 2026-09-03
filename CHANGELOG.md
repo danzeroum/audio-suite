@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — CORP-08 (Onda 3)
+- **Corpus de defeito injetado com ground truth** (`tests/corpus/defects.py`): 6 tipos (click, dropout, repetição/buffer stutter, clipping sustentado, DC offset, gap), todos seed-based e byte-determinísticos, anotados com `expected_findings: list[rule_id]` validados contra CONTR-02.
+- **`scripts/detector_score.py`**: precisão/recall por detector e por rule_id sobre o corpus; tabela publicada no README, artifact JSON/MD no CI (job `detector-score`).
+- **Gap de cobertura documentado**: `dc_offset` não tem detector registrado — recall N/A publicado explicitamente (não escondido).
+- Testes do corpus funcionam como gate de qualidade: detector que regridir (recall < 1.0 no corpus) quebra o CI.
+
 ### Added — CORP-04 + CORP-04.r (Onda 3)
 - **Golden Master de processo**: `tests/golden/expected/<analyzer>.json` para os 10 analyzers-core (loudness, true_peak, clipping, glitch, lra, spectral, transient, mono_compat, descriptors×7, inspect) sobre 12 fixtures seed-based.
 - Tolerâncias **por analyzer** (`tolerances` no `tests/golden/manifest.yaml`), **derivadas empiricamente** (±2σ via jitter relativo de 1 ulp float32; proveniência completa em `tests/golden/calibration.json`) — nunca hard-code "0,05".
