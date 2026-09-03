@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — DOCS-04.r (Onda 5)
+- **Caso de uso: gate pós-render do mixlirous** (`docs/casos-de-uso/gate-pos-render-mixlirous.md`): padrão de uso no CI (perfil `music-master/streaming` sobre o WAV renderizado + `compare` contra a referência com `--fail-on-regression`) e o mapeamento status ↔ limiares de Golden Master do mixlirous (**0,05 / 0,15 / 0,35 → pass / needs_review / fail**), com script pronto, tabela de artefatos de evidência e diagnóstico de falhas. Exemplo do doc validado contra o código real (compare + gate).
+
 ### Added — PROF-06.r (Onda 5)
 - **Herança de profiles** (`extends:` no `load_profile`): pai resolvido por caminho relativo ao filho ou por nome em `profiles/`; deep-merge filho-sobre-pai (params de analyzer chave a chave; strict_overlay/retention como bloco); herança em cadeia; erro claro para pai inexistente.
 - **Sub-variantes de music-master**: `profiles/music-master.yaml` (base: TP −1,0 dBTP, loudness −16..−10 LUFS, defeitos objetivos em `error` via strict_overlay, descritores em observation) + `music-master/streaming.yaml` (−15..−13 LUFS / −1,0 dBTP), `shortform.yaml` (−13..−9 LUFS / −1,0 dBTP, TikTok/Reels), `club.yaml` (−14..−11 LUFS / −2,0 dBTP — headroom maior para PA). Todos R1-clean (linter PROF-08.r valida).
