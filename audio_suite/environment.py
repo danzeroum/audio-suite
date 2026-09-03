@@ -93,3 +93,38 @@ def snapshot_environment(profile: Profile | None = None) -> dict[str, Any]:
         json.dumps(env, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     return env
+
+
+def build_reproduction_command(
+    *,
+    source_path: str,
+    profile_path: str | None = None,
+    strict: bool = False,
+    fmt: str = "json",
+    output: str | None = None,
+    only: list[str] | None = None,
+    skip: list[str] | None = None,
+    resample: int | None = None,
+) -> str:
+    """Comando exato para re-executar a análise (EVID-07).
+
+    Determinístico: flags em ordem fixa; flags não usadas são omitidas.
+    Junto com o `environment_hash` (EVID-02.r+), executar o comando em um
+    ambiente com o mesmo hash deve reproduzir o bundle byte a byte
+    (ver EVID-08 --frozen-manifest).
+    """
+    parts = ["audio-suite", "analyze", str(source_path)]
+    if profile_path:
+        parts += ["--profile", str(profile_path)]
+    parts += ["--format", fmt]
+    if strict:
+        parts.append("--strict")
+    if only:
+        parts += ["--only", ",".join(only)]
+    if skip:
+        parts += ["--skip", ",".join(skip)]
+    if resample is not None:
+        parts += ["--resample", str(resample)]
+    if output:
+        parts += ["--output", str(output)]
+    return " ".join(parts)
