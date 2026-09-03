@@ -1,0 +1,45 @@
+# music-master — perfil base de QC para master musical (PROF-06.r)
+# Defeitos objetivos em error (via strict_overlay); descritores SEMPRE em
+# observation (R1 — o linter PROF-08.r bloqueia qualquer overlay sobre DESC).
+name: music-master
+version: "1.0.0"
+data_classification: internal
+
+analyzers:
+  inspect: {}
+  loudness:
+    min_lufs: -16.0
+    max_lufs: -10.0
+  true_peak:
+    max_dbtp: -1.0
+  clipping:
+    threshold: 0.99
+    max_clipped_pct: 0.01
+  glitch:
+    click_sensitivity: 6.0
+    dropout_min_ms: 10.0
+  mono_compat:
+    max_loss_db: 6.0
+  channel_balance:
+    max_delta_lufs: 1.0
+    max_delta_rms_db: 2.0
+  spectral_health: {}
+  lra: {}
+  codec_conf: {}
+  resampling: {}
+  transient:
+    max_attack_ms: 5.0
+  ref_quality:
+    mode: no-reference
+
+retention_policy:
+  bundle_ttl_days: 365
+  redact_pii: false
+
+strict_overlay:
+  clipping:
+    clipped_sample_pct: fail
+  true_peak:
+    true_peak: fail
+  glitch:
+    glitch_event_count: fail

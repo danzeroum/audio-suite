@@ -1,0 +1,5 @@
+analyzers:
+  loudness:
+    min_lufs: -20.0
+name: gp
+version: '1'

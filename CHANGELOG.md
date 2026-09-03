@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — PROF-06.r (Onda 5)
+- **Herança de profiles** (`extends:` no `load_profile`): pai resolvido por caminho relativo ao filho ou por nome em `profiles/`; deep-merge filho-sobre-pai (params de analyzer chave a chave; strict_overlay/retention como bloco); herança em cadeia; erro claro para pai inexistente.
+- **Sub-variantes de music-master**: `profiles/music-master.yaml` (base: TP −1,0 dBTP, loudness −16..−10 LUFS, defeitos objetivos em `error` via strict_overlay, descritores em observation) + `music-master/streaming.yaml` (−15..−13 LUFS / −1,0 dBTP), `shortform.yaml` (−13..−9 LUFS / −1,0 dBTP, TikTok/Reels), `club.yaml` (−14..−11 LUFS / −2,0 dBTP — headroom maior para PA). Todos R1-clean (linter PROF-08.r valida).
+- `rule_id_class()` no registry (CONTR-02): classificação estrutural objective/descriptive/forensic.
+
 ### Added — CONF-03.r (Onda 5)
 - **mixlirous como oráculo adicional na matriz de validação cruzada** (`tests/conformance/test_CONF03_mixlirous_oracle.py`): o loudness Rust do mixlirous roda via CLI/subprocess sobre o mesmo corpus de calibração dos oráculos Python (sinais seed-based com níveis conhecidos) — **nenhuma dependência de código**, apenas comparação de resultados numéricos.
 - Padrão CONS: divergência entre oráculos é **investigação, não erro automático** — a matriz (`test-results/oracle-matrix.json`, artifact de CI) marca `needs_investigation` (limiar 0,5 LU) e o teste continua verde.

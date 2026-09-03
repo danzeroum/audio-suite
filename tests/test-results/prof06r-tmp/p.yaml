@@ -1,0 +1,5 @@
+analyzers:
+  loudness:
+    max_lufs: -10.0
+extends: gp
+name: p

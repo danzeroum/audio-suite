@@ -31,10 +31,21 @@ def load_profile(path: str | Path, *, strict: bool = False) -> Profile:
         strict: if True, merge the profile's `strict_overlay` block (if any)
                 into the active policy. Does NOT auto-escalate warnings —
                 only applies the explicit overlay rules.
+
+    Inheritance (PROF-06.r): um profile pode declarar `extends: <caminho>`
+    (relativo ao arquivo ou nome resolvível em `profiles/`). O pai é carregado
+    recursivamente e o filho é mesclado por cima (deep-merge: params de
+    analyzer são mesclados chave a chave; listas/escalares do filho vencem;
+    strict_overlay e retention_policy do filho vencem como bloco).
     """
     p = Path(path)
     if not p.exists():
-        raise ProfileError(f"profile not found: {path}")
+        # tenta resolver como nome de profile (profiles/<nome>.yaml) — PROF-06.r
+        alt = Path(__file__).resolve().parent.parent / "profiles" / f"{p}.yaml"
+        if alt.exists():
+            p = alt
+        else:
+            raise ProfileError(f"profile not found: {path}")
     try:
         raw = yaml.safe_load(p.read_text(encoding="utf-8"))
     except yaml.YAMLError as exc:
@@ -43,7 +54,56 @@ def load_profile(path: str | Path, *, strict: bool = False) -> Profile:
     if not isinstance(raw, dict):
         raise ProfileError("profile root must be a mapping")
 
+    raw = _resolve_inheritance(raw, p)
     return validate_profile(raw, strict=strict)
+
+
+def _resolve_inheritance(raw: dict, child_path: Path) -> dict:
+    """Resolve `extends:` (PROF-06.r) com deep-merge filho-sobre-pai."""
+    extends = raw.get("extends")
+    if not extends:
+        return raw
+    if not isinstance(extends, str):
+        raise ProfileError("'extends' deve ser o caminho/nome do profile pai")
+
+    parent_path = Path(extends)
+    if not parent_path.exists():
+        # relativo ao arquivo filho
+        rel = child_path.parent / f"{extends}.yaml"
+        rel2 = child_path.parent / extends
+        alt_name = Path(__file__).resolve().parent.parent / "profiles" / f"{extends}.yaml"
+        for cand in (rel, rel2, alt_name):
+            if cand.exists():
+                parent_path = cand
+                break
+        else:
+            raise ProfileError(f"extends: profile pai não encontrado: {extends}")
+
+    try:
+        parent_raw = yaml.safe_load(parent_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise ProfileError(f"YAML parse error em {parent_path}: {exc}") from exc
+    if not isinstance(parent_raw, dict):
+        raise ProfileError(f"profile pai inválido: {parent_path}")
+    parent_raw = _resolve_inheritance(parent_raw, parent_path)  # herança em cadeia
+
+    merged = dict(parent_raw)
+    for key, child_val in raw.items():
+        if key == "extends":
+            continue
+        if key == "analyzers" and isinstance(child_val, dict) and isinstance(merged.get(key), dict):
+            merged_analyzers = dict(merged[key])
+            for aid, params in child_val.items():
+                if isinstance(params, dict) and isinstance(merged_analyzers.get(aid), dict):
+                    merged_params = dict(merged_analyzers[aid])
+                    merged_params.update(params)
+                    merged_analyzers[aid] = merged_params
+                else:
+                    merged_analyzers[aid] = params
+            merged[key] = merged_analyzers
+        else:
+            merged[key] = child_val
+    return merged
 
 
 def validate_profile(raw: dict[str, Any], *, strict: bool = False) -> Profile:

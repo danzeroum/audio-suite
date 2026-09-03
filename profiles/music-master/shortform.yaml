@@ -1,0 +1,14 @@
+# music-master/shortform — TikTok / Reels / Shorts (PROF-06.r)
+# Shorts toleram masters mais quentes (faixa −13..−9 LUFS); teto de true peak
+# permanece −1,0 dBTP (loudness normalization das plataformas não perdoa clip).
+extends: ../music-master
+
+name: music-master/shortform
+version: "1.0.0"
+
+analyzers:
+  loudness:
+    min_lufs: -13.0
+    max_lufs: -9.0
+  true_peak:
+    max_dbtp: -1.0
