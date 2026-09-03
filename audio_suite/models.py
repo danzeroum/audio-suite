@@ -222,6 +222,8 @@ class Bundle:
     aggregate_status: str
     measurement_fingerprint: str
     signature: dict[str, Any] | None = None
+    environment: dict[str, Any] | None = None  # EVID-02.r+
+    reproduction_command: str | None = None  # EVID-07
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -233,6 +235,8 @@ class Bundle:
             "aggregate_status": self.aggregate_status,
             "measurement_fingerprint": self.measurement_fingerprint,
             "signature": self.signature,
+            "environment": self.environment,
+            "reproduction_command": self.reproduction_command,
         }
 
 

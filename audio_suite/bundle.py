@@ -120,10 +120,19 @@ def build_bundle(
     sign: bool = False,
     signing_key_path: str | None = None,
     audit: dict[str, Any] | None = None,
+    reproduction_command: str | None = None,
 ) -> Bundle:
-    """Build the evidence bundle from analysis results."""
+    """Build the evidence bundle from analysis results.
+
+    EVID-02.r+: inclui snapshot de ambiente (versões, platform, hash do profile
+    resolvido, versões de analyzers, backend DSP). EVID-07: reproduction_command
+    quando fornecido pelo chamador.
+    """
+    from .environment import snapshot_environment
+
     canonical = _canonicalize_findings(findings)
     fp = measurement_fingerprint(canonical)
+    environment = snapshot_environment(profile)
 
     subject = {
         "source_path": audio.source_path,
@@ -165,6 +174,7 @@ def build_bundle(
                     "findings": canonical,
                     "aggregate_status": aggregate.value,
                     "measurement_fingerprint": fp,
+                    "environment": environment,
                 },
                 key_path=signing_key_path,
             )
@@ -184,6 +194,8 @@ def build_bundle(
         aggregate_status=aggregate.value,
         measurement_fingerprint=fp,
         signature=signature,
+        environment=environment,
+        reproduction_command=reproduction_command,
     )
 
 
