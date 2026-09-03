@@ -32,6 +32,12 @@ audio-suite analyze path/to/audio.wav --format html --output report.html
 
 # Strict mode + signed bundle
 audio-suite analyze path/to/audio.wav --strict --sign --signing-key key.pem
+
+# Compare two files (objective regression diff, ENG-13)
+audio-suite compare reference.wav candidate.wav --fail-on-regression
+
+# Golden Master (process regression net, CORP-04)
+audio-suite golden verify --diff-dir gm-artifacts
 ```
 
 ## Exit codes

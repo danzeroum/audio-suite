@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — ENG-13 (Onda 4)
+- **`audio-suite compare A.wav B.wav`** (maior valor do plano): diff acústico objetivo — ΔLUFS, ΔdBTP, ΔLRA, Δmono band loss; achados novos por rule_id (CONTR-02) em `findings.only_in_b`; descritores **sempre** como `observations` (R1 — nunca geram regressão).
+- Saída `diff.json` com `regression_detected: bool` — true **somente** para defeito objetivo novo (rule_id flagado em B e não em A). Validação CONTR-01 contra `schemas/compare-v1.json` (nova). Flag `--fail-on-regression` para gate de CI.
+
 ### Added — CORP-08 (Onda 3)
 - **Corpus de defeito injetado com ground truth** (`tests/corpus/defects.py`): 6 tipos (click, dropout, repetição/buffer stutter, clipping sustentado, DC offset, gap), todos seed-based e byte-determinísticos, anotados com `expected_findings: list[rule_id]` validados contra CONTR-02.
 - **`scripts/detector_score.py`**: precisão/recall por detector e por rule_id sobre o corpus; tabela publicada no README, artifact JSON/MD no CI (job `detector-score`).
