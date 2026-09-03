@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — GOV-13 (Onda 4)
+- **Sync backlog ↔ GitHub Issues** (`scripts/sync_issues.py` + `backlog.yaml`): materializa os 16 IDs das Ondas 3–5 como issues com labels `onda/<N>` e `prio/<pN>`, idempotente por marker oculto no corpo (`<!-- audio-suite-backlog: <ID> -->`). Itens arquivados com gatilho (VI.2, BACKLOG-13/14) não viram issue por padrão (opt-in `--include-archived`). Resiliente a token sem permissão de edição (avisa e continua). Labels `onda/3..5` + `prio/p0..p3` criadas no repo; 16 issues materializadas (#20–#35); re-execução: 0 duplicatas.
+
 ### Added — GOV-12 (Onda 4)
 - **`AGENTS.md`** (handoff para agentes de IA): comandos de build/teste/lint, invariantes R1/R2/R4/R8, regra do SHA de validação e lista explícita de "nunca fazer" (port Rust sem gatilho, HMAC, fail em descritivo, binário no repo, regenerar golden sem label, RNG global, timestamps no payload determinístico, reabrir decisões arquivadas).
 
