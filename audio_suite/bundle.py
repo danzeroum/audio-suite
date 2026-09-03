@@ -27,6 +27,12 @@ def _canonicalize_findings(findings: list[Finding]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for f in sorted(findings, key=sort_key):
         d = f.to_dict()
+        # EVID-08: caminhos locais são dependentes de máquina — findings devem
+        # descrever o ÁUDIO, não o filesystem. O caminho canônico fica em
+        # subject.source_path (campo declarado não-determinístico). Sem isso,
+        # o measurement_fingerprint não é estável entre máquinas/caminhos.
+        if isinstance(d.get("evidence"), dict):
+            d["evidence"].pop("source_path", None)
         # Enrich with stable rule_id (CONTR-02)
         from .rule_ids import get_rule_id, get_severity
 

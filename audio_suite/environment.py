@@ -99,9 +99,7 @@ def build_reproduction_command(
     *,
     source_path: str,
     profile_path: str | None = None,
-    strict: bool = False,
     fmt: str = "json",
-    output: str | None = None,
     only: list[str] | None = None,
     skip: list[str] | None = None,
     resample: int | None = None,
@@ -109,22 +107,20 @@ def build_reproduction_command(
     """Comando exato para re-executar a análise (EVID-07).
 
     Determinístico: flags em ordem fixa; flags não usadas são omitidas.
-    Junto com o `environment_hash` (EVID-02.r+), executar o comando em um
-    ambiente com o mesmo hash deve reproduzir o bundle byte a byte
-    (ver EVID-08 --frozen-manifest).
+    Não inclui `--output` (destino não é semântica da análise) nem `--strict`
+    (flag de dupla semântica: overlay E verificação EVID-08; o estado strict
+    do overlay fica registrado em `profile.strict` no próprio bundle). Sem
+    essas exclusões, a identidade byte a byte do EVID-08 entre dois runs com
+    o mesmo manifesto seria impossível.
     """
     parts = ["audio-suite", "analyze", str(source_path)]
     if profile_path:
         parts += ["--profile", str(profile_path)]
     parts += ["--format", fmt]
-    if strict:
-        parts.append("--strict")
     if only:
         parts += ["--only", ",".join(only)]
     if skip:
         parts += ["--skip", ",".join(skip)]
     if resample is not None:
         parts += ["--resample", str(resample)]
-    if output:
-        parts += ["--output", str(output)]
     return " ".join(parts)

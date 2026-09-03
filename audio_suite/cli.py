@@ -98,6 +98,27 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     except ProfileError as exc:
         return _emit_error(str(exc), ExitCode.INVALID_PROFILE)
 
+    # 1.b EVID-08: frozen manifest pre-check (before running anything)
+    frozen = None
+    if args.frozen_manifest:
+        import json as _json
+
+        from .frozen import format_divergences, precheck_frozen_manifest
+
+        frozen_path = Path(args.frozen_manifest)
+        if not frozen_path.exists():
+            return _emit_error(
+                f"frozen manifest not found: {args.frozen_manifest}",
+                ExitCode.FROZEN_MANIFEST_MISMATCH,
+            )
+        frozen = _json.loads(frozen_path.read_text(encoding="utf-8"))
+        divergences = precheck_frozen_manifest(frozen, profile)
+        if divergences:
+            return _emit_error(
+                f"frozen manifest mismatch: {format_divergences(divergences)}",
+                ExitCode.FROZEN_MANIFEST_MISMATCH,
+            )
+
     # 2. Decode audio (may exit 3)
     try:
         audio = decode(args.file, target_sr=args.resample)
@@ -119,9 +140,7 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     reproduction_command = build_reproduction_command(
         source_path=args.file,
         profile_path=str(profile_path),
-        strict=args.strict,
         fmt=args.format,
-        output=args.output,
         only=only,
         skip=skip,
         resample=args.resample,
@@ -135,6 +154,18 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         signing_key_path=args.signing_key,
         reproduction_command=reproduction_command,
     )
+
+    # 4.b EVID-08: --strict (com --frozen-manifest) exige identidade byte a byte
+    # exceto campos declarados não-determinísticos
+    if frozen is not None and args.strict:
+        from .frozen import format_divergences, verify_byte_identity
+
+        divergences = verify_byte_identity(frozen, bundle.to_dict())
+        if divergences:
+            return _emit_error(
+                f"frozen manifest byte-identity violated: {format_divergences(divergences)}",
+                ExitCode.FROZEN_MANIFEST_MISMATCH,
+            )
 
     # 5. Emit in requested format
     fmt = args.format
@@ -359,6 +390,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_analyze.add_argument("--resample", type=int, help="explicit resample target Hz")
     p_analyze.add_argument("--sign", action="store_true", help="sign the evidence bundle")
     p_analyze.add_argument("--signing-key", help="path to Ed25519 private key")
+    p_analyze.add_argument(
+        "--frozen-manifest",
+        help="EVID-08: bundle JSON anterior — recusa se versões/profile divergirem",
+    )
     p_analyze.set_defaults(func=cmd_analyze)
 
     # self-check (Fase 3.5)

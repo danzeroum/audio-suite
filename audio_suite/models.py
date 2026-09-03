@@ -249,3 +249,4 @@ class ExitCode:
     INVALID_PROFILE = 2  # profile YAML failed validation
     INVALID_INPUT = 3  # input audio could not be decoded / missing
     USAGE = 64  # CLI usage error (sysexits.h EX_USAGE)
+    FROZEN_MANIFEST_MISMATCH = 65  # EVID-08: frozen manifest diverges (EX_DATAERR)

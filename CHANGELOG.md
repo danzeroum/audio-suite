@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — EVID-08 (Onda 4)
+- **`--frozen-manifest` (+ `--strict`)**: reprodutibilidade forte de laudo. Pré-check recusa execução se versão da tool, de qualquer analyzer, hash do profile resolvido ou `environment_hash` divergirem do bundle congelado — **erro nomeia o campo divergente**. `--strict` (com `--frozen-manifest`) exige ainda identidade byte a byte pós-run, exceto campos declarados não-determinísticos (`subject.source_path`, `signature`, `reproduction_command` — todos embutem identidade local do filesystem).
+- **Novo exit code 65** (`FROZEN_MANIFEST_MISMATCH`, sysexits `EX_DATAERR`) — quebra declarada (SemVer 0.x), contrato de exit codes estendido.
+- **Refinamento EVID-07 declarado:** `reproduction_command` não inclui mais `--output` (destino não é semântica da análise) nem `--strict` (dupla semântica: overlay + verificação; o estado do overlay fica em `profile.strict` no bundle) — pré-requisito para a identidade byte a byte.
+- **Determinismo de findings:** `evidence.source_path` (local) é removido do payload canônico dos findings — findings descrevem o áudio, não o filesystem; `measurement_fingerprint` fica estável entre caminhos/máquinas.
+
 ### Added — EVID-07 (Onda 4)
 - **`reproduction_command`** no bundle JSON e no SARIF: comando exato para re-executar a análise (ordem fixa de flags; `--output` incluído só quando usado). Com o `environment_hash` (EVID-02.r+), ambiente igual + comando igual → bundle byte a byte (ver EVID-08).
 
