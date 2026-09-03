@@ -35,28 +35,24 @@ def sine_wav(tmp_path_factory):
 
 
 def test_reproduction_command_is_deterministic_and_ordered():
-    kwargs = dict(
-        source_path="x.wav",
-        profile_path="p.yaml",
-        strict=True,
-        fmt="json",
-        output="o.json",
-        only=["a", "b"],
-        skip=None,
-        resample=None,
-    )
+    kwargs = {
+        "source_path": "x.wav",
+        "profile_path": "p.yaml",
+        "fmt": "json",
+        "only": ["a", "b"],
+        "skip": None,
+        "resample": None,
+    }
     c1 = build_reproduction_command(**kwargs)
     c2 = build_reproduction_command(**kwargs)
     assert c1 == c2
-    assert (
-        c1 == "audio-suite analyze x.wav --profile p.yaml --format json --strict --only a,b --output o.json"
-    )
+    assert c1 == "audio-suite analyze x.wav --profile p.yaml --format json --only a,b"
 
 
 def test_reproduction_command_omits_unused_flags():
     cmd = build_reproduction_command(source_path="x.wav")
     assert cmd == "audio-suite analyze x.wav --format json"
-    assert "--strict" not in cmd and "--only" not in cmd
+    assert "--strict" not in cmd and "--only" not in cmd and "--output" not in cmd
 
 
 def test_reproduction_command_is_shell_executable_form(sine_wav):
@@ -77,14 +73,13 @@ def test_bundle_json_carries_reproduction_command(sine_wav, tmp_path):
     assert str(sine_wav) in cmd
     assert "--format json" in cmd
     # o comando embutido é consistente com os argumentos usados
-    assert "--output" in cmd  # -o foi usado
+    assert "--output" not in cmd  # destino não é semântica da análise
 
 
 def test_bundle_json_no_output_flag_when_stdout(sine_wav, tmp_path, capsys):
     rc = cli_main(["analyze", str(sine_wav), "--format", "json"])
     assert rc == 0
     bundle = json.loads(capsys.readouterr().out)
-    assert "--output" not in bundle["reproduction_command"]
     assert bundle["reproduction_command"].endswith("--format json")
 
 
