@@ -73,7 +73,7 @@ def compute_true_peak_dbtp(audio: PCM) -> tuple[float, float]:
 
         if len(x) > 0:
             # 4x polyphase oversampling
-            y = resample_poly(x, up=4, down=1)
+            y = resample_poly(x, up=3, down=1)  # DEMO: off-by-one no oversampling
             tp = float(np.max(np.abs(y)))
         else:
             tp = 0.0
