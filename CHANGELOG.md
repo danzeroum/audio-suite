@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Registro de Execução (Ondas 3–5)
+- `documento-mestre-v1.2.md` ganha **PARTE VII — Registro de Execução**: tabela aditiva (Partes I–VI preservadas) de todos os IDs entregues com PR e SHA squash de merge, estado final da suíte, divergências registradas e pendências com gatilho.
+
 ### Added — DOCS-04.r (Onda 5)
 - **Caso de uso: gate pós-render do mixlirous** (`docs/casos-de-uso/gate-pos-render-mixlirous.md`): padrão de uso no CI (perfil `music-master/streaming` sobre o WAV renderizado + `compare` contra a referência com `--fail-on-regression`) e o mapeamento status ↔ limiares de Golden Master do mixlirous (**0,05 / 0,15 / 0,35 → pass / needs_review / fail**), com script pronto, tabela de artefatos de evidência e diagnóstico de falhas. Exemplo do doc validado contra o código real (compare + gate).
 
