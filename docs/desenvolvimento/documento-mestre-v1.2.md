@@ -273,3 +273,51 @@ Não entra em nenhuma onda. **Pré-condição de acionamento:** TEST-05 evidenci
 ---
 
 **Fim do documento v1.2.** O agente inicia pela Onda 0 com ordem interna obrigatória (GOV-02 → demais → tag). Este documento é a única fonte de verdade — sugestões futuras passam pelo mesmo protocolo de triagem (§10) antes de ganhar ID.
+
+
+---
+
+# PARTE VII — REGISTRO DE EXECUÇÃO (Ondas 3–5)
+
+> **Nota de protocolo:** este registro é ADITIVO — nenhuma seção aprovada
+> (Partes I–VI) foi reescrita. Cada linha cita o SHA squash do merge do PR.
+> Execução: 2026-09-03, agente de implementação, SHA inspecionado de partida
+> `8bf82bc98a090d7d830fe6f8d5bef43a1925f3bc`.
+
+## Onda 3 — Robustez + Golden Master de processo
+
+| ID | Entrega | PR | SHA do merge |
+|---|---|---|---|
+| CORP-01.r | Geradores seed-based primários (`tests/fixtures/generators.py`), política anti-binários (script + job CI), `expected_findings` no manifest; fix: float WAV determinístico (libsndfile embutia wall-clock no PEAK) e high_bw_96k de fato a 96 kHz | [#9](https://github.com/danzeroum/audio-suite/pull/9) | `6f522768a9d71110d22704095f6e6abd650ab449` |
+| CORP-04 + CORP-04.r | Golden Master de processo: expected por analyzer (10 grupos × 12 fixtures), tolerâncias ±2σ empíricas (jitter relativo 1 ulp; `calibration.json`), `golden freeze/verify`, gm-diff.json/html, guard CI (`golden-regen` + CHANGELOG); glitch vetorizado bit-a-bit equivalente (GM 9,3 s < 90 s) | [#10](https://github.com/danzeroum/audio-suite/pull/10) | `a961d96adcd9a9831c420a312d24923fce1f3487` |
+| — | Demonstração DoD: PR aberto com off-by-one no oversampling do true peak (4→3) — rejeitado com diff legível (não mesclar) | [#11](https://github.com/danzeroum/audio-suite/pull/11) | aberto (evidência) |
+| CORP-08 | Corpus de defeito injetado com ground truth (6 tipos), `detector_score.py` (precisão/recall por detector e rule_id), tabela no README + artifact CI; gap dc_offset documentado | [#12](https://github.com/danzeroum/audio-suite/pull/12) | `1b0df428460c0102b7042488655df8607e3ccb14` |
+| TEST-03.r | Fuzz endurecido (FUZZ-05..08: payload corrompido, chunks mentirosos, bit depths exóticos, NaN/Inf); health checks do Hypothesis corrigidos (divergência registrada); ADR-0003 com janela 2026-09-03→2026-09-10 e data-alvo 2026-09-14; job fuzz no CI | [#13](https://github.com/danzeroum/audio-suite/pull/13) | `dd513ef580fa488d6d6981ae5f1c998905040997` |
+
+## Onda 4 — Produto + reprodutibilidade + governança
+
+| ID | Entrega | PR | SHA do merge |
+|---|---|---|---|
+| ENG-13 | `audio-suite compare A.wav B.wav`: Δs objetivos, only_in_b por rule_id, descritores como observation (R1), `regression_detected`, schema `compare-v1.json` (CONTR-01), `--fail-on-regression` | [#14](https://github.com/danzeroum/audio-suite/pull/14) | `f4964cebd21a35430da325aa768cd8e35060ea49` |
+| EVID-02.r+ | Snapshot de ambiente (profile resolvido SHA-256, `environment_hash`, versões de analyzers, `dsp_backend: python`); assinatura Ed25519 cobre environment (quebra declarada) | [#15](https://github.com/danzeroum/audio-suite/pull/15) | `6a3b62c0c92e1d93ad9e0f326063a750d1494b49` |
+| EVID-07 | `reproduction_command` no bundle JSON e SARIF (determinístico, ordem fixa) | [#16](https://github.com/danzeroum/audio-suite/pull/16) | `53d9b724cceef5018554ecc4c60d42ef60798538` |
+| EVID-08 | `--frozen-manifest` (+`--strict`): pré-checks com erro nomeado, identidade byte a byte exceto campos declarados; exit 65 | [#17](https://github.com/danzeroum/audio-suite/pull/17) | `1062d2cd78f2dcc703e46718e4aec47f6433be79` |
+| GOV-11 | `docs/adr/` formalizado: TEMPLATE + ADR-0001 (reservado, proveniência/GPL bloqueante) + ADR-0002 (tolerâncias ±2σ) + ADR-0004 (HMAC rejeitado); ADR-0003 veio no TEST-03.r | [#18](https://github.com/danzeroum/audio-suite/pull/18) | `dd453e4f3734c5bc81dec91f2f58c98d1b8800e0` |
+| GOV-12 | `AGENTS.md`: comandos, invariantes R1/R2/R4/R8, regra do SHA, 10 "nunca fazer" | [#19](https://github.com/danzeroum/audio-suite/pull/19) | `817771aef4151f57ae50299c6abaee18fdf3bfe3` |
+| GOV-13 | Sync backlog ↔ Issues idempotente (`scripts/sync_issues.py` + `backlog.yaml`); 16 issues (#20–#35), labels `onda/N`/`prio/N`; re-execução: 0 duplicatas | [#36](https://github.com/danzeroum/audio-suite/pull/36) | `b23dec91868d7405d3cbe6f775bcbef78957d4e8` |
+| PROF-08.r | Linter do registry (3 camadas: perfis, probe dinâmico, scan AST); CI `rule-registry-lint` + `.githooks/pre-commit`; DoD: descritivo em fail rejeitado (5 violações, exit 1) | [#37](https://github.com/danzeroum/audio-suite/pull/37) | `2240e2973ef655c5f359190637c3e321d634d22b` |
+
+## Onda 5 — Ecossistema mixlirous
+
+| ID | Entrega | PR | SHA do merge |
+|---|---|---|---|
+| CONF-03.r | mixlirous Rust como oráculo adicional (CLI/subprocess, sem dependência de código); padrão CONS (divergência = `needs_investigation`, limiar 0,5 LU); matriz `oracle-matrix.json` como artifact; skip sem `MIXLIROUS_CLI`; adapter provado com binário fake | [#38](https://github.com/danzeroum/audio-suite/pull/38) | `85ffda02430e5f46a85c3f8f5ac86e56fd535f28` |
+| PROF-06.r | Herança de profiles (`extends:` com deep-merge e cadeia) + `music-master/{streaming,shortform,club}.yaml`; `rule_id_class()` no registry; R1-clean pelo linter | [#39](https://github.com/danzeroum/audio-suite/pull/39) | `e5d518e7cfee0d4a5ae0659c1a91258be2ff8f06` |
+| DOCS-04.r | Caso de uso: gate pós-render do mixlirous; mapeamento GM 0,05/0,15/0,35 → pass/needs_review/fail; script de gate validado contra o código real | [#40](https://github.com/danzeroum/audio-suite/pull/40) | `1bc8656455309b0827abccbed401d245d5421cb6` |
+
+## Estado ao fim da execução (SHA `1bc8656455309b0827abccbed401d245d5421cb6`)
+
+- Suíte: **381 passed, 1 skipped** (oráculo Rust ausente — por design), 0 falhas (fuzz incluído).
+- Critérios de sucesso da missão: todos atendidos (ver PRs acima). Zero Rust, zero HMAC, zero binário > 1 MB commitado — como exigido.
+- Divergências registradas nos PRs conforme protocolo ("código vence para fatos, prompt vence para decisões"): health checks de fuzz quebrados desde a Onda 2 (TEST-03.r #13); jitter absoluto vs. relativo na calibração GM (#10); `--output`/`--strict` fora do `reproduction_command` (EVID-08 #17); high_bw_96k gravado a 44,1 kHz com label errada (CORP-01.r #9).
+- Pendências herdam gatilho, não escopo: BACKLOG-13/14 e eixo Rust (VI.2) permanecem arquivados; transição fuzz fail-closed observa janela do ADR-0003 (2026-09-10, data-alvo 2026-09-14).
