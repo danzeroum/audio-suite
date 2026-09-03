@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — GOV-11 (Onda 4)
+- **`docs/adr/`** formalizado (diretório antecipado no TEST-03.r): `TEMPLATE.md` + ADR-0001 (**reservado** — proveniência de código externo, verificação GPL bloqueante, pré-condição do eixo Rust arquivado VI.2), ADR-0002 (tolerâncias empíricas ±2σ e política de regeneração do Golden Master), ADR-0003 (fuzz fail-open→fail-closed, via TEST-03.r), ADR-0004 (rejeição do HMAC, remetendo a N-19/Ed25519).
+
 ### Added — EVID-08 (Onda 4)
 - **`--frozen-manifest` (+ `--strict`)**: reprodutibilidade forte de laudo. Pré-check recusa execução se versão da tool, de qualquer analyzer, hash do profile resolvido ou `environment_hash` divergirem do bundle congelado — **erro nomeia o campo divergente**. `--strict` (com `--frozen-manifest`) exige ainda identidade byte a byte pós-run, exceto campos declarados não-determinísticos (`subject.source_path`, `signature`, `reproduction_command` — todos embutem identidade local do filesystem).
 - **Novo exit code 65** (`FROZEN_MANIFEST_MISMATCH`, sysexits `EX_DATAERR`) — quebra declarada (SemVer 0.x), contrato de exit codes estendido.
