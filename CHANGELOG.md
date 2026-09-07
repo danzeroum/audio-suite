@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Governança (pós-Ondas 3–5)
+- **ADR-0005**: avaliação formal dos gatilhos dos itens arquivados (eixo Rust VI.2, BACKLOG-13, BACKLOG-14) solicitada pelo mantenedor — **nenhum acionado**: TEST-05 com 0 violações no CI (19/19 commits verdes; local 5/6, único desvio é cold-start do loudness com steady-state a 475× realtime); ENG-03 sem demanda; 1 consumidor programático documentado (<2 do gatilho do BACKLOG-13); sem modo serviço (BACKLOG-14).
+- **Ledger de fuzz do ADR-0003** (`scripts/fuzz_ledger.py`, stdlib pura): 14/14 runs verdes do job `Fuzz decoder` no main desde a abertura da janela (2026-09-03), zero crashes; operacionaliza a evidência (SHAs dos runs) que o PR de transição fail-closed deve citar (janela fecha 2026-09-10, data-alvo 2026-09-14).
+
 ### Fixed — Higiene de CI
 - `ruff format` aplicado a `tests/unit/contracts/test_PROF06r_music_master.py` (linha que excedeu o limite do formatter introduzido no PR #39). O job **Lint & Security** vinha falhando no `main` desde `e5d518e` — todos os demais jobs (testes 3.11/3.12/3.13, fuzz, golden guard, oráculo, performance, integração, Docker) já estavam verdes; com este fix o CI do `main` volta a 100%.
 
