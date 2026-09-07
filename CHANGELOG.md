@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Higiene de CI
+- `ruff format` aplicado a `tests/unit/contracts/test_PROF06r_music_master.py` (linha que excedeu o limite do formatter introduzido no PR #39). O job **Lint & Security** vinha falhando no `main` desde `e5d518e` — todos os demais jobs (testes 3.11/3.12/3.13, fuzz, golden guard, oráculo, performance, integração, Docker) já estavam verdes; com este fix o CI do `main` volta a 100%.
+
 ### Added — Registro de Execução (Ondas 3–5)
 - `documento-mestre-v1.2.md` ganha **PARTE VII — Registro de Execução**: tabela aditiva (Partes I–VI preservadas) de todos os IDs entregues com PR e SHA squash de merge, estado final da suíte, divergências registradas e pendências com gatilho.
 

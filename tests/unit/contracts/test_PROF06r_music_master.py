@@ -46,9 +46,7 @@ def test_variant_inherits_from_music_master(variant):
     }
     assert set(p.analyzers) == expected_analyzers
     # herdado: strict_overlay do pai (defeitos objetivos → error), ativo com --strict
-    p_strict = load_profile(
-        ROOT / "profiles" / "music-master" / f"{variant}.yaml", strict=True
-    )
+    p_strict = load_profile(ROOT / "profiles" / "music-master" / f"{variant}.yaml", strict=True)
     assert p_strict.strict_overlay.get("clipping", {}).get("clipped_sample_pct") == "fail"
     assert p_strict.strict_overlay.get("true_peak", {}).get("true_peak") == "fail"
     assert p_strict.strict_overlay.get("glitch", {}).get("glitch_event_count") == "fail"
