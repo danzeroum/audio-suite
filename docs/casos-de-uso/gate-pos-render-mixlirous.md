@@ -5,8 +5,9 @@
 **SHA inspecionado (mixlirous):** `5048a107a28524fc515bd7bd26805514a37187d9`
 
 > **Revisão (2026-09-24).** A versão anterior deste documento, escrita contra
-> o audio-suite `e5d518e`, chamava `mixlirous render track.json --out render.wav`.
-> **Esse comando não existe** no mixlirous: o workspace
+> o audio-suite `e5d518e`, mandava o mixlirous renderizar um "track.json" por um
+> subcomando `render` de linha de comando. **Esse subcomando não existe** no
+> mixlirous: o workspace
 > (`Cargo.toml` → `crates/audio_core`, `crates/audio_agent`, `crates/audio_api`)
 > declara um único binário, o servidor HTTP `audio_api`, e o mixlirous não
 > tem conceito de `track.json`. Ele recebe um WAV, cria uma *track* e roda
