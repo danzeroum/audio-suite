@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — DOCS-04.r: caso de uso do gate pós-render sem comando inexistente
+- `docs/casos-de-uso/gate-pos-render-mixlirous.md` chamava `mixlirous render track.json --out render.wav`, **comando que não existe** no mixlirous (`5048a10`: único binário é o servidor `audio_api`; não há `track.json`). O documento passa a descrever o caminho que existe — **render via API HTTP** (local-session → presign → upload → track → job `manual` → artifact), executado de ponta a ponta contra o servidor real — e marca a forma CLI como **pendente**, com o contrato pedido em danzeroum/mixlirous#65.
+- Os limiares 0,05/0,15/0,35 do Golden Master do mixlirous são de **distância de fingerprint** (`AudioFingerprint::distance`, adimensional); a versão anterior os aplicava aos `deltas` do `diff.json` (LU/dB). O mapeamento e o script de gate foram corrigidos (o gate do lado audio-suite decide por `regression_detected`; a distância entra quando a CLI do mixlirous existir). Faixa 0,15–0,35 alinhada ao mixlirous (falha que exige aprovação humana → `needs_review`).
+- `--out` → `--output` (flag canônica; `--out` só funcionava por abreviação do argparse).
+
 ### Added — AS-DESC-008: descritor de altura `pitch_f0` (triagem §10 aprovada pelo dono em 2026-09-24)
 - **F0 mediana sobre quadros vozeados** (`audio_suite/analyzers/pitch_f0.py`, check_id `pitch_f0.median`, métrica `f0_median_hz`): YIN (CMNDF + limiar absoluto 0,15 + interpolação parabólica), vetorizado por FFT, **numpy puro** (R2+). Vozeamento explícito (quadro sem vale abaixo do limiar = não vozeado) e gate de energia relativo ao quadro mais forte (−40 dB). Evidência: p10/p25/p75/p90 em Hz, IQR, faixa p10–p90 em semitons, fração vozeada.
 - **Descritivo (R1)**: termina só em `pass` (observation), `not_applicable` (silêncio) ou `indeterminate` (sinal sem quadros vozeados, ex.: ruído branco) — nunca `fail`. Módulo 100% descritivo: entra no scan estático do PROF-08.r (injeção de `Status.FAIL` → 4 violações, exit 1).
