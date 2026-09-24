@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — AS-DESC-008: descritor de altura `pitch_f0` (triagem §10 aprovada pelo dono em 2026-09-24)
+- **F0 mediana sobre quadros vozeados** (`audio_suite/analyzers/pitch_f0.py`, check_id `pitch_f0.median`, métrica `f0_median_hz`): YIN (CMNDF + limiar absoluto 0,15 + interpolação parabólica), vetorizado por FFT, **numpy puro** (R2+). Vozeamento explícito (quadro sem vale abaixo do limiar = não vozeado) e gate de energia relativo ao quadro mais forte (−40 dB). Evidência: p10/p25/p75/p90 em Hz, IQR, faixa p10–p90 em semitons, fração vozeada.
+- **Descritivo (R1)**: termina só em `pass` (observation), `not_applicable` (silêncio) ou `indeterminate` (sinal sem quadros vozeados, ex.: ruído branco) — nunca `fail`. Módulo 100% descritivo: entra no scan estático do PROF-08.r (injeção de `Status.FAIL` → 4 violações, exit 1).
+- Motivação medida: o `pitch_stab` não decide vozeamento, e em fala real o `pitch_drift_cents` satura (4.851–5.456 cents para os 10 falantes dos filmes do estúdio dos Guardiões) — zero poder de separar vozes. O `pitch_stab` **não foi alterado**.
+- Fixture seed-based `gen_harmonic` (tom harmônico, fundamental atenuável, varredura exponencial) em `tests/fixtures/generators.py`, sem arquivo gerado novo (manifest inalterado).
+- Testes `tests/unit/analyzers/test_DESC08_pitch_f0.py` (16): 120 Hz → 120 ± 2, 220 Hz → 220 ± 3 (22,05/44,1/48 kHz), fundamental −20 dB sem erro de oitava, varredura 150→300 Hz com percentis < 25 cents, silêncio → not_applicable, ruído branco (3 sementes) → indeterminate, determinismo.
+- Golden Master **inalterado** (o `gm_profile.yaml` não roda `pitch_stab`/`pitch_f0`); nenhum `golden freeze`.
+- Triagem registrada no Documento Mestre (Parte VII, "Registro de triagem (§10)"): ID AS-DESC-008, refinamento da família DESC, Onda 5, decisão do dono em 2026-09-24.
+
 ### Added — Governança (pós-Ondas 3–5)
 - **ADR-0005**: avaliação formal dos gatilhos dos itens arquivados (eixo Rust VI.2, BACKLOG-13, BACKLOG-14) solicitada pelo mantenedor — **nenhum acionado**: TEST-05 com 0 violações no CI (19/19 commits verdes; local 5/6, único desvio é cold-start do loudness com steady-state a 475× realtime); ENG-03 sem demanda; 1 consumidor programático documentado (<2 do gatilho do BACKLOG-13); sem modo serviço (BACKLOG-14).
 - **Ledger de fuzz do ADR-0003** (`scripts/fuzz_ledger.py`, stdlib pura): 14/14 runs verdes do job `Fuzz decoder` no main desde a abertura da janela (2026-09-03), zero crashes; operacionaliza a evidência (SHAs dos runs) que o PR de transição fail-closed deve citar (janela fecha 2026-09-10, data-alvo 2026-09-14).

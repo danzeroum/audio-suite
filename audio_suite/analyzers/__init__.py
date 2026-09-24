@@ -54,6 +54,7 @@ from . import (
     mam_dam,  # noqa: E402,F401
     mono_compat,  # noqa: E402,F401
     multichannel_layout,  # noqa: E402,F401
+    pitch_f0,  # noqa: E402,F401
     pitch_stab,  # noqa: E402,F401
     ref_quality,  # noqa: E402,F401
     resampling,  # noqa: E402,F401

@@ -72,6 +72,7 @@ RULE_IDS: dict[tuple[str, str], str] = {
     ("melodic_contour", "melodic_contour_direction"): "AS-DESC-005",
     ("inharmonicity", "inharmonicity"): "AS-DESC-006",
     ("lra", "loudness_range"): "AS-DESC-007",
+    ("pitch_f0", "f0_median_hz"): "AS-DESC-008",
 }
 
 

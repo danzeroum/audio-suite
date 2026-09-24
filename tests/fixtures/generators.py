@@ -198,6 +198,36 @@ def gen_speech_like(sr: int = SR, dur_s: float = DURATION_S, seed: int = 99) -> 
     return x.astype(np.float32)
 
 
+def gen_harmonic(
+    f0_hz: float = 120.0,
+    sr: int = SR,
+    dur_s: float = 2.0,
+    n_harm: int = 10,
+    fund_db: float = 0.0,
+    f1_hz: float | None = None,
+    seed: int = 7,
+) -> np.ndarray:
+    """Tom harmônico de F0 conhecida (fixture de altura, descritor pitch_f0).
+
+    Harmônico k com amplitude 1/k e fase sorteada por ``make_rng(seed)``;
+    ``fund_db`` atenua só o fundamental (prova de erro de oitava) e
+    ``f1_hz`` transforma o tom numa varredura exponencial f0→f1.
+    """
+    rng = make_rng(seed)
+    t = np.arange(int(sr * dur_s)) / sr
+    if f1_hz is None:
+        fase = 2 * np.pi * f0_hz * t
+    else:
+        razao = np.log(f1_hz / f0_hz)
+        fase = 2 * np.pi * f0_hz * dur_s / razao * (np.exp(razao * t / dur_s) - 1.0)
+    fases = rng.uniform(0, 2 * np.pi, n_harm)
+    x = np.zeros_like(t)
+    for k in range(1, n_harm + 1):
+        ganho = 10 ** (fund_db / 20) if k == 1 else 1.0
+        x += ganho / k * np.sin(k * fase + fases[k - 1])
+    return (0.3 * x / np.max(np.abs(x))).astype(np.float32)
+
+
 def gen_truncated_wav_bytes(valid_bytes: int) -> bytes:
     """WAV bytes of sine_1k truncated to ``valid_bytes``."""
     x = gen_sine(440)
