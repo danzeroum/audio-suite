@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — DOCS-04.r: caso de uso do gate pós-render sem comando inexistente
+- `docs/casos-de-uso/gate-pos-render-mixlirous.md` chamava `mixlirous render track.json --out render.wav`, **comando que não existe** no mixlirous (`5048a10`: único binário é o servidor `audio_api`; não há `track.json`). O documento passa a descrever o caminho que existe — **render via API HTTP** (local-session → presign → upload → track → job `manual` → artifact), executado de ponta a ponta contra o servidor real — e marca a forma CLI como **pendente**, com o contrato pedido em issue no mixlirous.
+- Os limiares 0,05/0,15/0,35 do Golden Master do mixlirous são de **distância de fingerprint** (`AudioFingerprint::distance`, adimensional); a versão anterior os aplicava aos `deltas` do `diff.json` (LU/dB). O mapeamento e o script de gate foram corrigidos (o gate do lado audio-suite decide por `regression_detected`; a distância entra quando a CLI do mixlirous existir). Faixa 0,15–0,35 alinhada ao mixlirous (falha que exige aprovação humana → `needs_review`).
+- `--out` → `--output` (flag canônica; `--out` só funcionava por abreviação do argparse).
+
 ### Added — Governança (pós-Ondas 3–5)
 - **ADR-0005**: avaliação formal dos gatilhos dos itens arquivados (eixo Rust VI.2, BACKLOG-13, BACKLOG-14) solicitada pelo mantenedor — **nenhum acionado**: TEST-05 com 0 violações no CI (19/19 commits verdes; local 5/6, único desvio é cold-start do loudness com steady-state a 475× realtime); ENG-03 sem demanda; 1 consumidor programático documentado (<2 do gatilho do BACKLOG-13); sem modo serviço (BACKLOG-14).
 - **Ledger de fuzz do ADR-0003** (`scripts/fuzz_ledger.py`, stdlib pura): 14/14 runs verdes do job `Fuzz decoder` no main desde a abertura da janela (2026-09-03), zero crashes; operacionaliza a evidência (SHAs dos runs) que o PR de transição fail-closed deve citar (janela fecha 2026-09-10, data-alvo 2026-09-14).
