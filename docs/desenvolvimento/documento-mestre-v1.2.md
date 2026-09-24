@@ -315,6 +315,16 @@ Não entra em nenhuma onda. **Pré-condição de acionamento:** TEST-05 evidenci
 | PROF-06.r | Herança de profiles (`extends:` com deep-merge e cadeia) + `music-master/{streaming,shortform,club}.yaml`; `rule_id_class()` no registry; R1-clean pelo linter | [#39](https://github.com/danzeroum/audio-suite/pull/39) | `e5d518e7cfee0d4a5ae0659c1a91258be2ff8f06` |
 | DOCS-04.r | Caso de uso: gate pós-render do mixlirous; mapeamento GM 0,05/0,15/0,35 → pass/needs_review/fail; script de gate validado contra o código real | [#40](https://github.com/danzeroum/audio-suite/pull/40) | `1bc8656455309b0827abccbed401d245d5421cb6` |
 
+## Registro de triagem (§10) — itens novos após a v1.2
+
+> Aditivo, como o resto desta Parte: registra a DECISÃO do dono sobre sugestão
+> nova, conforme o fim da Parte VI ("sugestões futuras passam pelo mesmo
+> protocolo de triagem (§10) antes de ganhar ID"). Nenhuma seção aprovada muda.
+
+| ID | Item | Classificação | Onda | Decisão | PR |
+|---|---|---|---|---|---|
+| AS-DESC-008 | Descritor de altura `pitch_f0`: F0 mediana, percentis e fração vozeada sobre quadros vozeados (YIN, numpy puro); descritivo (R1) — `pass`/`not_applicable`/`indeterminate`, nunca `fail`. Origem: o estúdio dos Guardiões, onde `pitch_drift_cents` satura (4.851–5.456 cents para todos os falantes) | refinamento (família DESC, CONTR-02) | 5 | **aprovado pelo dono (danzeroum) em 2026-09-24**; o ID do item é o próprio rule_id | [#44](https://github.com/danzeroum/audio-suite/pull/44) |
+
 ## Estado ao fim da execução (SHA `1bc8656455309b0827abccbed401d245d5421cb6`)
 
 - Suíte: **381 passed, 1 skipped** (oráculo Rust ausente — por design), 0 falhas (fuzz incluído).
