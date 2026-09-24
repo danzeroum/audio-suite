@@ -109,7 +109,7 @@ Não há comando de linha para render nem para a distância de fingerprint do
 Golden Master do mixlirous (`AudioFingerprint::distance` existe só como
 biblioteca em `crates/audio_core/src/domain/fingerprint.rs`). O contrato de
 que este caso de uso precisa está pedido em
-**ISSUE_MIXLIROUS**. Enquanto ela não for implementada, **nenhum** exemplo
+**[danzeroum/mixlirous#65](https://github.com/danzeroum/mixlirous/issues/65)**. Enquanto ela não for implementada, **nenhum** exemplo
 deste documento invoca `mixlirous <subcomando>`.
 
 ## 3. Mapeamento status ↔ limiares de Golden Master do mixlirous

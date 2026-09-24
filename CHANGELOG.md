@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed — DOCS-04.r: caso de uso do gate pós-render sem comando inexistente
-- `docs/casos-de-uso/gate-pos-render-mixlirous.md` chamava `mixlirous render track.json --out render.wav`, **comando que não existe** no mixlirous (`5048a10`: único binário é o servidor `audio_api`; não há `track.json`). O documento passa a descrever o caminho que existe — **render via API HTTP** (local-session → presign → upload → track → job `manual` → artifact), executado de ponta a ponta contra o servidor real — e marca a forma CLI como **pendente**, com o contrato pedido em issue no mixlirous.
+- `docs/casos-de-uso/gate-pos-render-mixlirous.md` chamava `mixlirous render track.json --out render.wav`, **comando que não existe** no mixlirous (`5048a10`: único binário é o servidor `audio_api`; não há `track.json`). O documento passa a descrever o caminho que existe — **render via API HTTP** (local-session → presign → upload → track → job `manual` → artifact), executado de ponta a ponta contra o servidor real — e marca a forma CLI como **pendente**, com o contrato pedido em danzeroum/mixlirous#65.
 - Os limiares 0,05/0,15/0,35 do Golden Master do mixlirous são de **distância de fingerprint** (`AudioFingerprint::distance`, adimensional); a versão anterior os aplicava aos `deltas` do `diff.json` (LU/dB). O mapeamento e o script de gate foram corrigidos (o gate do lado audio-suite decide por `regression_detected`; a distância entra quando a CLI do mixlirous existir). Faixa 0,15–0,35 alinhada ao mixlirous (falha que exige aprovação humana → `needs_review`).
 - `--out` → `--output` (flag canônica; `--out` só funcionava por abreviação do argparse).
 
